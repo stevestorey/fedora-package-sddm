@@ -1,6 +1,6 @@
 Name:           sddm
 Version:        0.1.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -46,7 +46,9 @@ make %{?_smp_mflags} -C %{_target_platform}
 
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
-cp -p %SOURCE1 %{buildroot}%{_sysconfdir}/pam.d/sddm
+install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/sddm
+# tmpfiles
+sed -i "s/AuthDir=\/var\/run\/xauth/AuthDir=\/var\/run\/sddm/" %{buildroot}%{_sysconfdir}/sddm.conf
 # set the first VT used to be 1
 sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 
@@ -73,6 +75,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Mon Jul 22 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-5
+- Store xauth in /var/run/sddm
+
 * Mon Jul 22 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-4
 - Added the documentation bits
 
