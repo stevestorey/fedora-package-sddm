@@ -1,6 +1,6 @@
 Name:           sddm
 Version:        0.1.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -75,6 +75,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Tue Aug 06 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-6
+- Added mate-keyring to PAM config (#993397)
+
 * Mon Jul 22 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-5
 - Store xauth in /var/run/sddm
 
