@@ -1,11 +1,14 @@
+%global _hardened_build 1
+%global sddm_commit e707e22901049495818a9bedf71f0ba829564700
+
 Name:           sddm
-Version:        0.1.0
-Release:        6%{?dist}
+Version:        0.2.0
+Release:        0.%(date +%y%m%d).git.%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
-Source0:        https://github.com/sddm/sddm/archive/%{version}.tar.gz
+Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
 # Originally kdm config, shamelessly stolen from kde-settings
 Source1:        sddm.pam
 
@@ -32,7 +35,7 @@ beautiful. It uses modern technologies like QtQuick, which in turn gives the
 designer the ability to create smooth, animated user interfaces.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{sddm_commit}
 
 %build
 mkdir -p %{_target_platform}
@@ -65,16 +68,24 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %doc COPYING README.md CONTRIBUTORS
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/sddm.conf
+%config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
 %{_unitdir}/sddm.service
 %{_libdir}/qt4/imports/SddmComponents
 %{_datadir}/apps/sddm/faces/*
+%{_datadir}/apps/sddm/flags/*
 %{_datadir}/apps/sddm/scripts/*
 %{_datadir}/apps/sddm/sddm.conf.sample
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Wed Aug 21 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.130821.git.e707e229
+- Imported the latest upstream git commit
+
+* Mon Aug 19 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-7
+- Set the build to be hardened
+
 * Tue Aug 06 2013 Martin Briza <mbriza@redhat.com> - 0.1.0-6
 - Added mate-keyring to PAM config (#993397)
 
