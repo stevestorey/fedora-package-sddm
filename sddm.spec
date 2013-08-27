@@ -3,13 +3,13 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.1.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.2.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
-# Originally kdm config, shamelessly stolen from kde-settings
+# Originally kdm config, shamelessly stolen from gdm
 Source1:        sddm.pam
 
 Provides: service(graphical-login) = sddm
@@ -80,6 +80,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Tue Aug 27 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.2.20130821gite707e229
+- Switched the pam config to the one GDM uses. Solves issues with pulseaudio and possibly more.
+
 * Thu Aug 22 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.1.20130821gite707e229
 - Fixed the package version
 
