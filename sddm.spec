@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.2.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.3.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -80,6 +80,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Tue Aug 27 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.3.20130821gite707e229
+- Suppress error output from missing PAMs.
+
 * Tue Aug 27 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.2.20130821gite707e229
 - Switched the pam config to the one GDM uses. Solves issues with pulseaudio and possibly more.
 
