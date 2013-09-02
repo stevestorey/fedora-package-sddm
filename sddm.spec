@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.3.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.4.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -11,6 +11,11 @@ Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
 # Originally kdm config, shamelessly stolen from gdm
 Source1:        sddm.pam
+# We need to ship our own service file to handle Fedora-specific cases
+Source2:        sddm.service
+
+# Upstreamed patch waiting for review, need it right now
+Patch1:         0001-Store-the-PAM-handle-in-the-Authenticator-class-and-.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -36,6 +41,7 @@ designer the ability to create smooth, animated user interfaces.
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
+%patch1 -p1 -b .pam_close
 
 %build
 mkdir -p %{_target_platform}
@@ -50,6 +56,7 @@ make %{?_smp_mflags} -C %{_target_platform}
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/sddm
+install -Dpm 644 %{SOURCE2} %{buildroot}%{_unitdir}/sddm.service
 # tmpfiles
 sed -i "s/AuthDir=\/var\/run\/xauth/AuthDir=\/var\/run\/sddm/" %{buildroot}%{_sysconfdir}/sddm.conf
 # set the first VT used to be 1
@@ -80,6 +87,10 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Mon Sep 02 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.4.20130821gite707e229
+- Complete PAM conversations and end them properly when the session ends
+- Ship our own systemd service file especially to provide Conflicts: getty@tty1.service
+
 * Tue Aug 27 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.3.20130821gite707e229
 - Suppress error output from missing PAMs.
 
