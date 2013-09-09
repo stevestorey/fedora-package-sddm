@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.5.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.6.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -44,6 +44,7 @@ designer the ability to create smooth, animated user interfaces.
 %prep
 %setup -q -n %{name}-%{sddm_commit}
 %patch1 -p1 -b .pam_close
+%patch2 -p1 -b .session-list
 
 %build
 mkdir -p %{_target_platform}
@@ -89,6 +90,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Mon Sep 09 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.6.20130821gite707e229
+- Added the patch, forgot to apply it, now it's okay
+
 * Mon Sep 09 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.5.20130821gite707e229
 - Set a better order of the X sessions selection and hidden the Custom one (#1004902)
 
