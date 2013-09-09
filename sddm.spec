@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.4.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.5.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -16,6 +16,8 @@ Source2:        sddm.service
 
 # Upstreamed patch waiting for review, need it right now
 Patch1:         0001-Store-the-PAM-handle-in-the-Authenticator-class-and-.patch
+# Patch setting a better order of the xsessions and hiding the custom one
+Patch2:         sddm-git.e707e229-session-list.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -87,6 +89,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/*
 
 %changelog
+* Mon Sep 09 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.5.20130821gite707e229
+- Set a better order of the X sessions selection and hidden the Custom one (#1004902)
+
 * Mon Sep 02 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.4.20130821gite707e229
 - Complete PAM conversations and end them properly when the session ends
 - Ship our own systemd service file especially to provide Conflicts: getty@tty1.service
