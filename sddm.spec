@@ -1,21 +1,19 @@
 %global _hardened_build 1
-%global sddm_commit e707e22901049495818a9bedf71f0ba829564700
+%global sddm_commit 50ca5b20354b6d338ce8836a613af19cedb1dca2
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.6.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.7.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
-Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
+Source0:        https://github.com/MartinBriza/sddm/archive/%{sddm_commit}.tar.gz
 # Originally kdm config, shamelessly stolen from gdm
 Source1:        sddm.pam
 # We need to ship our own service file to handle Fedora-specific cases
 Source2:        sddm.service
 
-# Upstreamed patch waiting for review, need it right now
-Patch1:         0001-Store-the-PAM-handle-in-the-Authenticator-class-and-.patch
 # Patch setting a better order of the xsessions and hiding the custom one
 Patch2:         sddm-git.e707e229-session-list.patch
 
@@ -43,7 +41,6 @@ designer the ability to create smooth, animated user interfaces.
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
-%patch1 -p1 -b .pam_close
 %patch2 -p1 -b .session-list
 
 %build
@@ -88,8 +85,14 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/scripts/*
 %{_datadir}/apps/sddm/sddm.conf.sample
 %{_datadir}/apps/sddm/themes/*
+%{_datadir}/apps/sddm/translations/*
 
 %changelog
+* Sat Sep 14 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.7.20130914git50ca5b20
+- Removed the nonfree font from the package, replaced with "Sans"
+- Temporarily set my own repository as the origin to avoid having the font in the srpm
+- Changing the source also brings us a few new commits and removes Patch1 for PAM
+
 * Mon Sep 09 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.6.20130821gite707e229
 - Added the patch, forgot to apply it, now it's okay
 
