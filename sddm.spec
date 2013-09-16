@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.8.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.9.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -27,6 +27,7 @@ BuildRequires:  libxcb-devel
 BuildRequires:  qt-devel
 BuildRequires:  pkgconfig
 
+Requires: kde-settings-sddm
 Requires: pam
 Requires: systemd
 Requires: xorg-x11-server-Xorg
@@ -85,6 +86,9 @@ rm %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/translations/*
 
 %changelog
+* Mon Sep 16 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.9.20130914git50ca5b20
+- Requires: kde-settings-sddm
+
 * Mon Sep 16 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.8.20130914git50ca5b20
 - Moved the config to the kde-settings-sddm package
 
