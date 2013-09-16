@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.7.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.8.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -57,10 +57,8 @@ make %{?_smp_mflags} -C %{_target_platform}
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE2} %{buildroot}%{_unitdir}/sddm.service
-# tmpfiles
-sed -i "s/AuthDir=\/var\/run\/xauth/AuthDir=\/var\/run\/sddm/" %{buildroot}%{_sysconfdir}/sddm.conf
-# set the first VT used to be 1
-sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
+# contained in kde-settings
+rm %{buildroot}%{_sysconfdir}/sddm.conf
 
 %post
 %systemd_post sddm.service
@@ -74,7 +72,6 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %files
 %doc COPYING README.md CONTRIBUTORS
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
-%config(noreplace)   %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
@@ -88,6 +85,9 @@ sed -i "s/^MinimumVT=[0-9]*$/MinimumVT=1/" %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/translations/*
 
 %changelog
+* Mon Sep 16 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.8.20130914git50ca5b20
+- Moved the config to the kde-settings-sddm package
+
 * Sat Sep 14 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.7.20130914git50ca5b20
 - Removed the nonfree font from the package, replaced with "Sans"
 - Temporarily set my own repository as the origin to avoid having the font in the srpm
