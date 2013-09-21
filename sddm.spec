@@ -24,7 +24,7 @@ BuildRequires:  systemd
 BuildRequires:  upower-devel
 BuildRequires:  pam-devel
 BuildRequires:  libxcb-devel
-BuildRequires:  qt-devel
+BuildRequires:  qt4-devel
 BuildRequires:  pkgconfig
 
 Requires: kde-settings-sddm
