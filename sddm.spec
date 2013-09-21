@@ -44,10 +44,12 @@ designer the ability to create smooth, animated user interfaces.
 %setup -q -n %{name}-%{sddm_commit}
 %patch2 -p1 -b .session-list
 
-%build
-mkdir -p %{_target_platform}
 # get rid of the architecture flag
 sed -i "s/-march=native//" CMakeLists.txt
+
+
+%build
+mkdir -p %{_target_platform}
 pushd %{_target_platform}
 %{cmake} ..
 popd
