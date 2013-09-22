@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.9.20130821git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.10.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -28,12 +28,9 @@ BuildRequires:  qt4-devel
 BuildRequires:  pkgconfig
 
 Requires: kde-settings-sddm
-Requires: pam
 Requires: systemd
 Requires: xorg-x11-server-Xorg
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+%{?systemd_requires}
 
 %description
 SDDM is a modern display manager for X11 aiming to be fast, simple and
@@ -60,8 +57,9 @@ make %{?_smp_mflags} -C %{_target_platform}
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE2} %{buildroot}%{_unitdir}/sddm.service
-# contained in kde-settings
-rm %{buildroot}%{_sysconfdir}/sddm.conf
+# moved to kde-settings-sddm
+rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
+
 
 %post
 %systemd_post sddm.service
@@ -79,15 +77,25 @@ rm %{buildroot}%{_sysconfdir}/sddm.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
 %{_unitdir}/sddm.service
-%{_libdir}/qt4/imports/SddmComponents
-%{_datadir}/apps/sddm/faces/*
-%{_datadir}/apps/sddm/flags/*
-%{_datadir}/apps/sddm/scripts/*
+%{_qt4_importdir}/SddmComponents/
+# or add Requires: kde-filesystem -- rex
+%dir %{_datadir}/apps
+%dir %{_datadir}/apps/sddm
+%{_datadir}/apps/sddm/faces/
+%{_datadir}/apps/sddm/flags/
+%{_datadir}/apps/sddm/scripts/
 %{_datadir}/apps/sddm/sddm.conf.sample
-%{_datadir}/apps/sddm/themes/*
-%{_datadir}/apps/sddm/translations/*
+%{_datadir}/apps/sddm/themes/
+# %%lang'ify ? -- rex
+%{_datadir}/apps/sddm/translations/
 
 %changelog
+* Sat Sep 21 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.10.20130914git50ca5b20
+- use %%_qt4_importdir, %%systemd_requires macros
+- own %%_datadir/apps/sddm
+- fix Release
+- drop explicit Requires: pam (let rpm autodeps handle it)
+
 * Mon Sep 16 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.9.20130914git50ca5b20
 - Requires: kde-settings-sddm
 
