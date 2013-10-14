@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.10.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.11.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -36,6 +36,14 @@ Requires: xorg-x11-server-Xorg
 SDDM is a modern display manager for X11 aiming to be fast, simple and
 beautiful. It uses modern technologies like QtQuick, which in turn gives the
 designer the ability to create smooth, animated user interfaces.
+
+%package themes
+Summary: SDDM Themes
+Requires: %{name} = %{version}-%{release}
+BuildArch: noarch
+%description themes
+A collection of sddm themes, including: circles, elarun, maldives, maui.
+
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
@@ -85,11 +93,20 @@ rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/flags/
 %{_datadir}/apps/sddm/scripts/
 %{_datadir}/apps/sddm/sddm.conf.sample
-%{_datadir}/apps/sddm/themes/
+%dir %{_datadir}/apps/sddm/themes/
 # %%lang'ify ? -- rex
 %{_datadir}/apps/sddm/translations/
 
+%files themes
+%{_datadir}/apps/sddm/themes/circles/
+%{_datadir}/apps/sddm/themes/elarun/
+%{_datadir}/apps/sddm/themes/maldives/
+%{_datadir}/apps/sddm/themes/maui/
+
 %changelog
+* Mon Oct 14 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.11.20130914git50ca5b20
+- -themes subpkg
+
 * Sat Sep 21 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.10.20130914git50ca5b20
 - use %%_qt4_importdir, %%systemd_requires macros
 - own %%_datadir/apps/sddm
