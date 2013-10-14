@@ -3,16 +3,27 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.12.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
-License:        GPLv2+
+Release:        0.13.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+# code GPLv2+, fedora theme CC-BY-SA
+License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/MartinBriza/sddm/archive/%{sddm_commit}.tar.gz
+
+# fedora standard sddm.conf
+Source10:       sddm.conf
 # Originally kdm config, shamelessly stolen from gdm
-Source1:        sddm.pam
+Source11:       sddm.pam
 # We need to ship our own service file to handle Fedora-specific cases
-Source2:        sddm.service
+Source12:       sddm.service
+# systesmd tmpfiles support for /var/run/sddm
+Source13:       tmpfiles-sddm.conf
+
+# fedora theme files
+Source21:       fedora-Main.qml
+Source22:       fedora-metadata.desktop
+Source23:       fedora-theme.conf
 
 # Patch setting a better order of the xsessions and hiding the custom one
 Patch2:         sddm-git.e707e229-session-list.patch
@@ -27,8 +38,14 @@ BuildRequires:  libxcb-devel
 BuildRequires:  qt4-devel
 BuildRequires:  pkgconfig
 
-Requires: kde-settings-sddm
+Obsoletes: kde-settings-sddm < 20-5
+
+# for /usr/share/backgrounds/default.png
+Requires: desktop-backgrounds-compat
+# for /usr/share/pixmaps/system-logo-white.png
+Requires: system-logos
 Requires: systemd
+Requires: xorg-x11-xinit
 Requires: xorg-x11-server-Xorg
 %{?systemd_requires}
 
@@ -49,6 +66,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
+
 %patch2 -p1 -b .session-list
 
 # get rid of the architecture flag
@@ -63,12 +81,20 @@ popd
 
 make %{?_smp_mflags} -C %{_target_platform}
 
+
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
-install -Dpm 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/pam.d/sddm
-install -Dpm 644 %{SOURCE2} %{buildroot}%{_unitdir}/sddm.service
-# moved to kde-settings-sddm
-rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
+
+install -Dpm 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/sddm.conf
+install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
+install -Dpm 644 %{SOURCE12} %{buildroot}%{_unitdir}/sddm.service
+install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
+mkdir -p %{buildroot}%{_localstatedir}/run/sddm
+
+# install fedora theme
+install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/Main.qml
+install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/metadata.desktop
+install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/theme.conf
 
 
 %post
@@ -82,10 +108,13 @@ rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
 
 %files
 %doc COPYING README.md CONTRIBUTORS
+%config %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
+%{_tmpfilesdir}/sddm.conf
+%attr(0711,root,root) %dir %{_localstatedir}/run/sddm
 %{_unitdir}/sddm.service
 %{_qt4_importdir}/SddmComponents/
 # or add Requires: kde-filesystem -- rex
@@ -96,6 +125,8 @@ rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/scripts/
 %{_datadir}/apps/sddm/sddm.conf.sample
 %dir %{_datadir}/apps/sddm/themes/
+# default fedora theme
+%{_datadir}/apps/sddm/themes/fedora/
 # %%lang'ify ? -- rex
 %{_datadir}/apps/sddm/translations/
 
@@ -106,6 +137,10 @@ rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Mon Oct 14 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.13.20130914git50ca5b20
+- include standard theme/config here, Obsoletes: kde-settings-sddm
+- sddm.conf: SessionCommand=/etc/X11/xinit/Xsession
+
 * Mon Oct 14 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.12.20130914git50ca5b20
 - -themes: Obsoletes: sddm ... for upgrade path
 
