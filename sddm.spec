@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.11.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.12.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 License:        GPLv2+
 Summary:        QML based X11 desktop manager
 
@@ -39,6 +39,8 @@ designer the ability to create smooth, animated user interfaces.
 
 %package themes
 Summary: SDDM Themes
+# for upgrade path
+Obsoletes: sddm < 0.2.0-0.12
 Requires: %{name} = %{version}-%{release}
 BuildArch: noarch
 %description themes
@@ -104,6 +106,9 @@ rm -fv %{buildroot}%{_sysconfdir}/sddm.conf
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Mon Oct 14 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.12.20130914git50ca5b20
+- -themes: Obsoletes: sddm ... for upgrade path
+
 * Mon Oct 14 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.11.20130914git50ca5b20
 - -themes subpkg
 
