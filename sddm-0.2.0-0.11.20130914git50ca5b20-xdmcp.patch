@@ -1286,10 +1286,10 @@ index 0000000..edfdff4
 +#include "Server.moc"
 diff --git a/src/daemon/xdmcp/Server.h b/src/daemon/xdmcp/Server.h
 new file mode 100644
-index 0000000..2860bf9
+index 0000000..2898381
 --- /dev/null
 +++ b/src/daemon/xdmcp/Server.h
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,118 @@
 +/*
 + * Server implementation for X Display Control Protocol
 + * Copyright (C) 2013  Martin Bříza <mbriza@redhat.com>
@@ -1318,7 +1318,8 @@ index 0000000..2860bf9
 +#include <QtCore/QTimer>
 +#include <QtNetwork/QUdpSocket>
 +
-+#include <X11/Xdmcp.h>
++// the same as in <X11/Xdmcp.h>
++#define XDM_UDP_PORT 177
 +
 +namespace SDDM {
 +
