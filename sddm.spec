@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.14.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.15.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -27,6 +27,8 @@ Source23:       fedora-theme.conf
 
 # Patch setting a better order of the xsessions and hiding the custom one
 Patch2:         sddm-git.e707e229-session-list.patch
+
+Patch3:         sddm-0.2.0-0.11.20130914git50ca5b20-xdmcp.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -68,6 +70,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %setup -q -n %{name}-%{sddm_commit}
 
 %patch2 -p1 -b .session-list
+%patch3 -p1 -b .xdmcp
 
 # get rid of the architecture flag
 sed -i "s/-march=native//" CMakeLists.txt
@@ -137,6 +140,10 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Tue Oct 15 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.15.20130914git50ca5b20
+- Added XDMCP support patch
+- Modified the config to reflect the added XDMCP support (disabled by default)
+
 * Tue Oct 15 2013 Rex Dieter <rdieter@fedoraproject.org> - 0.2.0-0.14.20130914git50ca5b20
 - sddm.conf: CurrentTheme=fedora
 
