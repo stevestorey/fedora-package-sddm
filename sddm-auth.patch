@@ -1,5 +1,5 @@
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 1d6d117..305dbad 100644
+index 1d6d117..e1c4b4b 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -17,12 +17,8 @@ set(DAEMON_SOURCES
@@ -27,7 +27,7 @@ index 1d6d117..305dbad 100644
      qt5_use_modules(sddm DBus Network)
  else()
      set(QT_USE_QTNETWORK TRUE)
-@@ -58,6 +49,38 @@ endif()
+@@ -58,6 +49,43 @@ endif()
  
  install(TARGETS sddm DESTINATION ${BIN_INSTALL_DIR})
  
@@ -36,10 +36,15 @@ index 1d6d117..305dbad 100644
 +set(AUTHENTICATOR_SOURCES
 +    auth/AuthenticatorApp.cpp
 +    auth/Method.cpp
-+    auth/PAM.cpp
 +    auth/Session.cpp
 +    common/Configuration.cpp
 +)
++if(PAM_FOUND)
++    set(AUTHENTICATOR_SOURCES
++        ${AUTHENTICATOR_SOURCES}
++        auth/PAM.cpp
++    )
++endif()
 +
 +if(USE_QT5)
 +    add_executable(sddm-auth ${AUTHENTICATOR_SOURCES})
@@ -739,10 +744,10 @@ index 0000000..e13133a
 +#endif // METHOD_H
 diff --git a/src/auth/PAM.cpp b/src/auth/PAM.cpp
 new file mode 100644
-index 0000000..f304894
+index 0000000..d9845d3
 --- /dev/null
 +++ b/src/auth/PAM.cpp
-@@ -0,0 +1,266 @@
+@@ -0,0 +1,262 @@
 +/*
 + * PAM Authenticator backend
 + *
@@ -767,8 +772,6 @@ index 0000000..f304894
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + *
 + */
-+
-+#ifdef USE_PAM
 +#include "PAM.h"
 +
 +#include <QtCore/QDebug>
@@ -1007,11 +1010,9 @@ index 0000000..f304894
 +};
 +
 +#include "PAM.moc"
-+
-+#endif // USE_PAM
 diff --git a/src/auth/PAM.h b/src/auth/PAM.h
 new file mode 100644
-index 0000000..51134ab
+index 0000000..f885ab5
 --- /dev/null
 +++ b/src/auth/PAM.h
 @@ -0,0 +1,217 @@
@@ -1074,9 +1075,9 @@ index 0000000..51134ab
 +         * \param passwordless true if no password is required
 +         * \param parent parent QObject
 +         */
-+        PamService(const QString &user, const QString &password, bool passwordless, QObject *parent = 0);
++        explicit PamService(const QString &user, const QString &password, bool passwordless, QObject *parent = 0);
 +
-+        ~PamService();
++        virtual ~PamService();
 +
 +        /**
 +         * Conversation function for the pam_conv structure
