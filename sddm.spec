@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.16.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.17.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -20,6 +20,8 @@ Source12:       sddm.service
 # systesmd tmpfiles support for /var/run/sddm
 Source13:       tmpfiles-sddm.conf
 
+Source14:       sddm-passwordless.pam
+
 # fedora theme files
 Source21:       fedora-Main.qml
 Source22:       fedora-metadata.desktop
@@ -29,6 +31,8 @@ Source23:       fedora-theme.conf
 Patch2:         sddm-git.e707e229-session-list.patch
 
 Patch3:         sddm-0.2.0-0.11.20130914git50ca5b20-xdmcp.patch
+
+Patch4:         sddm-auth.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -71,6 +75,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 %patch2 -p1 -b .session-list
 %patch3 -p1 -b .xdmcp
+%patch4 -p1 -b .auth
 
 # get rid of the architecture flag
 sed -i "s/-march=native//" CMakeLists.txt
@@ -92,6 +97,7 @@ install -Dpm 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/sddm.conf
 install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE12} %{buildroot}%{_unitdir}/sddm.service
 install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
+install -Dpm 644 %{SOURCE14} %{buildroot}%{_sysconfdir}/pam.d/sddm-passwordless
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 
 # install fedora theme
@@ -113,8 +119,10 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %doc COPYING README.md CONTRIBUTORS
 %config %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
+%config(noreplace)   %{_sysconfdir}/pam.d/sddm-passwordless
 %config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
+%{_bindir}/sddm-auth
 %{_bindir}/sddm-greeter
 %{_tmpfilesdir}/sddm.conf
 %attr(0711,root,root) %dir %{_localstatedir}/run/sddm
@@ -140,6 +148,9 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Tue Nov 05 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.17.20130914git50ca5b20
+- Rewritten the authentication stack to work right with PAM
+
 * Tue Oct 15 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.16.20130914git50ca5b20
 - Fixed the Fedora theme wallpaper path
 
