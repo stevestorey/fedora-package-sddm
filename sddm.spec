@@ -39,7 +39,6 @@ Provides: service(graphical-login) = sddm
 
 BuildRequires:  cmake
 BuildRequires:  systemd
-BuildRequires:  upower-devel
 BuildRequires:  pam-devel
 BuildRequires:  libxcb-devel
 BuildRequires:  qt4-devel
