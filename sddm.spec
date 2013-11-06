@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.19.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.20.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -33,6 +33,7 @@ Patch2:         sddm-git.e707e229-session-list.patch
 Patch3:         sddm-0.2.0-0.11.20130914git50ca5b20-xdmcp.patch
 
 Patch4:         sddm-auth.patch
+Patch5:         sddm-auth2.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -76,6 +77,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %patch2 -p1 -b .session-list
 %patch3 -p1 -b .xdmcp
 %patch4 -p1 -b .auth
+%patch5 -p2 -b .auth2
 
 # get rid of the architecture flag
 sed -i "s/-march=native//" CMakeLists.txt
@@ -148,6 +150,9 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Tue Nov 05 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.20.20130914git50ca5b20
+- Fix xdisplay and tty vars
+
 * Tue Nov 05 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.19.20130914git50ca5b20
 - Patch cleanup
 
