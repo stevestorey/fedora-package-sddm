@@ -1,9 +1,9 @@
 %global _hardened_build 1
-%global sddm_commit 50ca5b20354b6d338ce8836a613af19cedb1dca2
+%global sddm_commit 7a008602f5f0a4ed8586ce24012983458a687d4e
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.20.20130914git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.21.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -33,7 +33,6 @@ Patch2:         sddm-git.e707e229-session-list.patch
 Patch3:         sddm-0.2.0-0.11.20130914git50ca5b20-xdmcp.patch
 
 Patch4:         sddm-auth.patch
-Patch5:         sddm-auth2.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -74,9 +73,9 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %setup -q -n %{name}-%{sddm_commit}
 
 %patch2 -p1 -b .session-list
-%patch3 -p1 -b .xdmcp
+# disabled for now
+#%patch3 -p1 -b .xdmcp
 %patch4 -p1 -b .auth
-%patch5 -p2 -b .auth2
 
 # get rid of the architecture flag
 sed -i "s/-march=native//" CMakeLists.txt
@@ -149,6 +148,14 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Mon Nov 25 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.21.20131125git7a008602
+- Rebase to current upstream
+- Fix the theme (and improve it by a bit)
+- Fix the authentication stack
+- Don't touch numlock on startup
+- Disabled the XDMCP server until it's accepted upstream
+- Resolves: #1016902 #1028799 #1031415 #1031745 #1020921 #1008951 #1004621
+
 * Tue Nov 05 2013 Martin Briza <mbriza@redhat.com> - 0.2.0-0.20.20130914git50ca5b20
 - Fix xdisplay and tty vars
 
