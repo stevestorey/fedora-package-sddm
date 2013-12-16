@@ -77,7 +77,7 @@ index cbef261..4b610d8 100644
  
          bool testing { false };
 diff --git a/src/daemon/DaemonApp.cpp b/src/daemon/DaemonApp.cpp
-index c40cdea..616282e 100644
+index 9ad226b..9feb734 100644
 --- a/src/daemon/DaemonApp.cpp
 +++ b/src/daemon/DaemonApp.cpp
 @@ -25,6 +25,7 @@
@@ -124,30 +124,28 @@ index 81f955c..2088010 100644
  }
  
 diff --git a/src/daemon/Display.cpp b/src/daemon/Display.cpp
-index 8517124..80aa95a 100644
+index f1a54b4..48137e6 100644
 --- a/src/daemon/Display.cpp
 +++ b/src/daemon/Display.cpp
-@@ -53,6 +53,19 @@ namespace SDDM {
+@@ -53,6 +53,17 @@ namespace SDDM {
          return name;
      }
  
-+    Display::Display(const QString& hostname, const int displayId, QObject* parent)
-+    : QObject(parent)
-+    , m_displayId(displayId)
-+    , m_authenticator(new Authenticator(this))
-+    , m_displayServer(nullptr)
-+    , m_socketServer(new SocketServer(this))
-+    , m_greeter(new Greeter(this))
-+    {
++    Display::Display(const QString& hostname, const int displayId, QObject* parent) : QObject(parent),
++        m_displayId(displayId),
++        m_authenticator(new Authenticator(this)),
++        m_displayServer(nullptr),
++        m_socketServer(new SocketServer(this)),
++        m_greeter(new Greeter(this)) {
 +        m_display = QString("%1:%2").arg(hostname).arg(displayId);
 +
 +        init();
 +    }
 +
-     Display::Display(const int displayId, const int terminalId, QObject *parent) : QObject(parent),
+     Display::Display(const int displayId, const int terminalId, Seat *parent) : QObject(parent),
          m_displayId(displayId), m_terminalId(terminalId),
          m_authenticator(new Authenticator(this)),
-@@ -62,12 +75,17 @@ namespace SDDM {
+@@ -63,12 +74,17 @@ namespace SDDM {
  
          m_display = QString(":%1").arg(m_displayId);
  
@@ -168,7 +166,7 @@ index 8517124..80aa95a 100644
          // connect login signal
          connect(m_socketServer, SIGNAL(login(QLocalSocket*,QString,QString,QString)), this, SLOT(login(QLocalSocket*,QString,QString,QString)));
  
-@@ -90,6 +108,22 @@ namespace SDDM {
+@@ -91,6 +107,22 @@ namespace SDDM {
  
          // set socket name
          m_socket = QString("sddm-%1-%2").arg(m_display).arg(generateName(6));
@@ -191,7 +189,7 @@ index 8517124..80aa95a 100644
      }
  
      Display::~Display() {
-@@ -112,6 +146,16 @@ namespace SDDM {
+@@ -113,6 +145,16 @@ namespace SDDM {
          return m_cookie;
      }
  
@@ -205,10 +203,10 @@ index 8517124..80aa95a 100644
 +        return cookie;
 +    }
 +
-     void Display::addCookie(const QString &file) {
-         // log message
-         qDebug() << " DAEMON: Adding cookie to" << file;
-@@ -139,28 +183,14 @@ namespace SDDM {
+     Seat *Display::seat() const {
+         return m_seat;
+     }
+@@ -144,28 +186,14 @@ namespace SDDM {
          if (m_started)
              return;
  
@@ -216,14 +214,14 @@ index 8517124..80aa95a 100644
 -        std::random_device rd;
 -        std::mt19937 gen(rd());
 -        std::uniform_int_distribution<> dis(0, 15);
--
--        // resever 32 bytes
--        m_cookie.reserve(32);
 +        if (m_displayServer != nullptr) {
 +            // set display server params
 +            m_displayServer->setDisplay(m_display);
 +            m_displayServer->setAuthPath(m_authPath);
  
+-        // resever 32 bytes
+-        m_cookie.reserve(32);
+-
 -        // create a random hexadecimal number
 -        const char *digits = "0123456789abcdef";
 -        for (int i = 0; i < 32; ++i)
@@ -244,7 +242,7 @@ index 8517124..80aa95a 100644
  
          if ((daemonApp->configuration()->first || daemonApp->configuration()->autoRelogin()) &&
              !daemonApp->configuration()->autoUser().isEmpty() && !daemonApp->configuration()->lastSession().isEmpty()) {
-@@ -216,9 +246,11 @@ namespace SDDM {
+@@ -221,9 +249,11 @@ namespace SDDM {
          m_socketServer->stop();
  
          // stop display server
@@ -260,26 +258,26 @@ index 8517124..80aa95a 100644
          // remove authority file
          QFile::remove(m_authPath);
 diff --git a/src/daemon/Display.h b/src/daemon/Display.h
-index 9d82678..9c475a9 100644
+index 46d320b..9556209 100644
 --- a/src/daemon/Display.h
 +++ b/src/daemon/Display.h
-@@ -34,6 +34,7 @@ namespace SDDM {
+@@ -35,6 +35,7 @@ namespace SDDM {
          Q_OBJECT
          Q_DISABLE_COPY(Display)
      public:
 +        explicit Display(const QString& hostname, const int displayId, QObject *parent = 0);
-         explicit Display(const int displayId, const int terminalId, QObject *parent = 0);
+         explicit Display(const int displayId, const int terminalId, Seat *parent);
          ~Display();
  
-@@ -43,6 +44,7 @@ namespace SDDM {
+@@ -44,6 +45,7 @@ namespace SDDM {
          const QString &name() const;
  
          const QString &cookie() const;
 +        const QByteArray rawCookie() const;
          void addCookie(const QString &file);
  
-     public slots:
-@@ -58,6 +60,8 @@ namespace SDDM {
+         Seat *seat() const;
+@@ -61,6 +63,8 @@ namespace SDDM {
          void loginSucceeded(QLocalSocket *socket);
  
      private:
@@ -290,10 +288,10 @@ index 9d82678..9c475a9 100644
  
 diff --git a/src/daemon/xdmcp/Packet.cpp b/src/daemon/xdmcp/Packet.cpp
 new file mode 100644
-index 0000000..90688d0
+index 0000000..3a0c3d9
 --- /dev/null
 +++ b/src/daemon/xdmcp/Packet.cpp
-@@ -0,0 +1,435 @@
+@@ -0,0 +1,397 @@
 +/*
 + * Packet type handling for X Display Control Protocol
 + * Copyright (C) 2013  Martin Bříza <mbriza@redhat.com>
@@ -325,17 +323,15 @@ index 0000000..90688d0
 +*                                   PLUMBING
 + ******************************************************************************/
 +
-+    Packet::Packet(const QHostAddress& host, quint16 port)
-+        : m_host(host)
-+        , m_port(port)
-+        , m_valid(true) {
++    Packet::Packet(const QHostAddress &host, quint16 port) : m_host(host),
++        m_port(port),
++        m_valid(true) {
 +
 +    }
 +
-+    Packet::Packet(const QHostAddress& host, quint16 port, Reader& r)
-+        : m_host(host)
-+        , m_port(port)
-+        , m_valid(false) {
++    Packet::Packet(const QHostAddress &host, quint16 port, Reader &r) : m_host(host),
++        m_port(port),
++        m_valid(false) {
 +
 +    }
 +
@@ -348,7 +344,7 @@ index 0000000..90688d0
 +    }
 +
 +    // static
-+    Packet *Packet::decode(const QByteArray& data, const QHostAddress& host, quint16 port) {
++    Packet *Packet::decode(const QByteArray &data, const QHostAddress &host, quint16 port) {
 +        Reader reader(data);
 +        uint16_t version, opcode, length;
 +
@@ -360,45 +356,45 @@ index 0000000..90688d0
 +            return nullptr;
 +
 +        switch (opcode) {
-+        case _Query:
-+            return new Query(host, port, reader);
-+        case _BroadcastQuery:
-+            return new BroadcastQuery(host, port, reader);
-+        case _IndirectQuery:
-+            return new IndirectQuery(host, port, reader);
-+        case _ForwardQuery:
-+            return new ForwardQuery(host, port, reader);
-+        case _Willing:
-+            return new Willing(host, port, reader);
-+        case _Unwilling:
-+            return new Unwilling(host, port, reader);
-+        case _Request:
-+            return new Request(host, port, reader);
-+        case _Accept:
-+            return new Accept(host, port, reader);
-+        case _Decline:
-+            return new Decline(host, port, reader);
-+        case _Manage:
-+            return new Manage(host, port, reader);
-+        case _Refuse:
-+            return new Refuse(host, port, reader);
-+        case _Failed:
-+            return new Failed(host, port, reader);
-+        case _KeepAlive:
-+            return new KeepAlive(host, port, reader);
-+        case _Alive:
-+            return new Alive(host, port, reader);
-+        default:
-+            qDebug() << " XDMCP: Got packet of an unknown type" << opcode;
-+            return nullptr;
++            case _Query:
++                return new Query(host, port, reader);
++            case _BroadcastQuery:
++                return new BroadcastQuery(host, port, reader);
++            case _IndirectQuery:
++                return new IndirectQuery(host, port, reader);
++            case _ForwardQuery:
++                return new ForwardQuery(host, port, reader);
++            case _Willing:
++                return new Willing(host, port, reader);
++            case _Unwilling:
++                return new Unwilling(host, port, reader);
++            case _Request:
++                return new Request(host, port, reader);
++            case _Accept:
++                return new Accept(host, port, reader);
++            case _Decline:
++                return new Decline(host, port, reader);
++            case _Manage:
++                return new Manage(host, port, reader);
++            case _Refuse:
++                return new Refuse(host, port, reader);
++            case _Failed:
++                return new Failed(host, port, reader);
++            case _KeepAlive:
++                return new KeepAlive(host, port, reader);
++            case _Alive:
++                return new Alive(host, port, reader);
++            default:
++                qDebug() << " XDMCP: Got packet of an unknown type" << opcode;
++                return nullptr;
 +        }
 +    }
 +
-+    void Packet::setHost(const QHostAddress host) {
++    void Packet::setHost(const QHostAddress &host) {
 +        m_host = QHostAddress(host);
 +    }
 +
-+    QHostAddress Packet::host() const {
++    const QHostAddress& Packet::host() const {
 +        return m_host;
 +    }
 +
@@ -424,12 +420,10 @@ index 0000000..90688d0
 +        return nullptr;
 +    }
 +
-+    Packet::Query::Query(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Query::Query(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_authenticationNames;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Query::encode() const {
@@ -438,12 +432,10 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Query);
 +    }
 +
-+    Packet::BroadcastQuery::BroadcastQuery(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::BroadcastQuery::BroadcastQuery(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_authenticationNames;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::BroadcastQuery::encode() const {
@@ -452,12 +444,10 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_BroadcastQuery);
 +    }
 +
-+    Packet::IndirectQuery::IndirectQuery(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::IndirectQuery::IndirectQuery(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_authenticationNames;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::IndirectQuery::encode() const {
@@ -466,11 +456,10 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_IndirectQuery);
 +    }
 +
-+    Packet::ForwardQuery::ForwardQuery(const QHostAddress& host, quint16 port, Reader& r) : Packet(host, port, r) {
++    Packet::ForwardQuery::ForwardQuery(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_clientAddress >> m_clientPort >> m_authenticationNames;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::ForwardQuery::encode() const {
@@ -479,20 +468,17 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_ForwardQuery);
 +    }
 +
-+    Packet::Willing::Willing(const QHostAddress& host, quint16 port, const QString& authenticationName, const QString& hostname, const QString& status)
-+        : Packet(host, port)
-+        , m_authenticationName(authenticationName.toLatin1())
-+        , m_hostname(hostname.toLatin1())
-+        , m_status(status.toLatin1()) {
++    Packet::Willing::Willing(const QHostAddress &host, quint16 port, const QString &authenticationName, const QString &hostname, const QString &status) : Packet(host, port),
++        m_authenticationName(authenticationName.toLatin1()),
++        m_hostname(hostname.toLatin1()),
++        m_status(status.toLatin1()) {
 +        qDebug() << " XDMCP: Prepared Willing reply for" << host << port << "with contents" << authenticationName << hostname << status;
 +    }
 +
-+    Packet::Willing::Willing(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Willing::Willing(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_authenticationName >> m_hostname >> m_status;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Willing::encode() const {
@@ -501,19 +487,16 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Willing);
 +    }
 +
-+    Packet::Unwilling::Unwilling(const QHostAddress& host, quint16 port, const QString& hostname, const QString& status)
-+        : Packet(host, port)
-+        , m_hostname(hostname.toLatin1())
-+        , m_status(status.toLatin1()) {
++    Packet::Unwilling::Unwilling(const QHostAddress &host, quint16 port, const QString &hostname, const QString &status) : Packet(host, port),
++        m_hostname(hostname.toLatin1()),
++        m_status(status.toLatin1()) {
 +        qDebug() << " XDMCP: Prepared Unwilling reply for" << host << port << "with contents" << hostname << status;
 +    }
 +
-+    Packet::Unwilling::Unwilling(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Unwilling::Unwilling(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_hostname >> m_status;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Unwilling::encode() const {
@@ -522,64 +505,50 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Unwilling);
 +    }
 +
-+    Packet::Request::Request(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
-+        r >> m_displayNumber >> m_connectionTypes >> m_connectionAddresses
-+        >> m_authenticationName >> m_authenticationData >> m_authorizationNames
-+        >> m_manufacturerDisplayID;
-+        if (r.isFinished()) {
++    Packet::Request::Request(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
++        r >> m_displayNumber >> m_connectionTypes >> m_connectionAddresses >> m_authenticationName >> m_authenticationData >> m_authorizationNames >> m_manufacturerDisplayID;
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Request::encode() const {
 +        Writer w;
-+        w << m_displayNumber << m_connectionTypes << m_connectionAddresses
-+        << m_authenticationName << m_authenticationData << m_authorizationNames
-+        << m_manufacturerDisplayID;
++        w << m_displayNumber << m_connectionTypes << m_connectionAddresses << m_authenticationName << m_authenticationData << m_authorizationNames << m_manufacturerDisplayID;
 +        return w.finalize(Packet::_Request);
 +    }
 +
-+    Packet::Accept::Accept(const QHostAddress& host, quint16 port, uint32_t sessionId, const QString authenticationName, const QByteArray authenticationData, const QString authorizationName, const QByteArray authorizationData)
-+        : Packet(host, port)
-+        , m_sessionID(sessionId)
-+        , m_authenticationName(authenticationName.toLatin1())
-+        , m_authenticationData(authenticationData)
-+        , m_authorizationName(authorizationName.toLatin1())
-+        , m_authorizationData(authorizationData) {
++    Packet::Accept::Accept(const QHostAddress &host, quint16 port, uint32_t sessionId, const QString authenticationName, const QByteArray authenticationData, const QString authorizationName, const QByteArray authorizationData) : Packet(host, port),
++        m_sessionID(sessionId),
++        m_authenticationName(authenticationName.toLatin1()),
++        m_authenticationData(authenticationData),
++        m_authorizationName(authorizationName.toLatin1()),
++        m_authorizationData(authorizationData) {
 +        qDebug() << " XDMCP: Prepared Accept reply for" << host << port << "with contents" << sessionId << authenticationName << authenticationData << authorizationName << authorizationData;
 +    }
 +
-+    Packet::Accept::Accept(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
-+        r >> m_sessionID >> m_authenticationName >> m_authenticationData
-+        >> m_authorizationName >> m_authorizationData;
-+        if (r.isFinished()) {
++    Packet::Accept::Accept(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
++        r >> m_sessionID >> m_authenticationName >> m_authenticationData >> m_authorizationName >> m_authorizationData;
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Accept::encode() const {
 +        Writer w;
-+        w << m_sessionID << m_authenticationName << m_authenticationData
-+        << m_authorizationName << m_authorizationData;
++        w << m_sessionID << m_authenticationName << m_authenticationData << m_authorizationName << m_authorizationData;
 +        return w.finalize(Packet::_Accept);
 +    }
 +
-+    Packet::Decline::Decline(const QHostAddress& host, quint16 port, const QString status, const QString authenticationName, const QByteArray authenticationData)
-+        : Packet(host, port)
-+        , m_status(status.toLatin1())
-+        , m_authenticationName(authenticationName.toLatin1())
-+        , m_authenticationData(authenticationData) {
++    Packet::Decline::Decline(const QHostAddress &host, quint16 port, const QString status, const QString authenticationName, const QByteArray authenticationData) : Packet(host, port),
++        m_status(status.toLatin1()),
++        m_authenticationName(authenticationName.toLatin1()),
++        m_authenticationData(authenticationData) {
 +        qDebug() << " XDMCP: Prepared Decline reply for" << host << port << "with contents" << status << authenticationName << authenticationData;
 +    }
 +
-+    Packet::Decline::Decline(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Decline::Decline(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_status >> m_authenticationName >> m_authenticationData;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Decline::encode() const {
@@ -588,12 +557,10 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Decline);
 +    }
 +
-+    Packet::Manage::Manage(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Manage::Manage(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_sessionID >> m_displayNumber >> m_displayClass;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Manage::encode() const {
@@ -602,17 +569,15 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Manage);
 +    }
 +
-+    Packet::Refuse::Refuse(const QHostAddress& host, quint16 port, uint32_t sessionID)
-+        : Packet(host, port)
-+        , m_sessionID(sessionID) {
++    Packet::Refuse::Refuse(const QHostAddress &host, quint16 port, uint32_t sessionID) : Packet(host, port),
++        m_sessionID(sessionID) {
 +        qDebug() << " XDMCP: Prepared Refuse reply for" << host << port << "with contents" << sessionID;
 +    }
 +
-+    Packet::Refuse::Refuse(const QHostAddress& host, quint16 port, Reader& r) : Packet(host, port, r) {
++    Packet::Refuse::Refuse(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_sessionID;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Refuse::encode() const {
@@ -621,19 +586,16 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Refuse);
 +    }
 +
-+    Packet::Failed::Failed(const QHostAddress& host, quint16 port, uint32_t sessionID, const QString& status)
-+        : Packet(host, port)
-+        , m_sessionID(sessionID)
-+        , m_status(status.toLatin1()) {
++    Packet::Failed::Failed(const QHostAddress &host, quint16 port, uint32_t sessionID, const QString &status) : Packet(host, port),
++        m_sessionID(sessionID),
++        m_status(status.toLatin1()) {
 +        qDebug() << " XDMCP: Prepared Failed reply for" << host << port << "with contents" << sessionID << status;
 +    }
 +
-+    Packet::Failed::Failed(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Failed::Failed(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_sessionID >> m_status;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Failed::encode() const {
@@ -642,12 +604,10 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_Failed);
 +    }
 +
-+    Packet::KeepAlive::KeepAlive(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::KeepAlive::KeepAlive(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_displayNumber >> m_sessionID;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::KeepAlive::encode() const {
@@ -656,19 +616,16 @@ index 0000000..90688d0
 +        return w.finalize(Packet::_KeepAlive);
 +    }
 +
-+    Packet::Alive::Alive(const QHostAddress& host, quint16 port, uint8_t sessionRunning, uint32_t sessionID)
-+        : Packet(host, port)
-+        , m_sessionRunning(sessionRunning)
-+        , m_sessionID(sessionID) {
++    Packet::Alive::Alive(const QHostAddress &host, quint16 port, uint8_t sessionRunning, uint32_t sessionID) : Packet(host, port),
++        m_sessionRunning(sessionRunning),
++        m_sessionID(sessionID) {
 +        qDebug() << " XDMCP: Prepared Alive reply for" << host << port << "with contents" << sessionRunning << sessionID;
 +    }
 +
-+    Packet::Alive::Alive(const QHostAddress& host, quint16 port, Reader& r)
-+        : Packet(host, port, r) {
++    Packet::Alive::Alive(const QHostAddress &host, quint16 port, Reader &r) : Packet(host, port, r) {
 +        r >> m_sessionRunning >> m_sessionID;
-+        if (r.isFinished()) {
++        if (r.isFinished())
 +            m_valid = true;
-+        }
 +    }
 +
 +    QByteArray Packet::Alive::encode() const {
@@ -682,45 +639,48 @@ index 0000000..90688d0
 + ******************************************************************************/
 +
 +    Packet *Packet::Query::onServerReceived() const {
-+        if (m_authenticationNames.isEmpty()) {
++        if (m_authenticationNames.isEmpty())
 +            return new Willing(m_host, m_port, "", Server::instance()->hostname(), Server::instance()->status());
-+        }
-+        else {
-+            return new Unwilling(m_host, m_port, Server::instance()->hostname(), "Server does not support authentication");
-+        }
++
++        return new Unwilling(m_host, m_port, Server::instance()->hostname(), "Server does not support authentication");
 +    }
 +
 +    Packet* Packet::Request::onServerReceived() const {
 +        qDebug() << " XDMCP: Server: Received Request" << m_displayNumber << m_connectionTypes << m_connectionAddresses << m_authenticationName << m_authenticationData << m_authorizationNames << m_manufacturerDisplayID;
++
 +        if (m_authorizationNames.contains("MIT-MAGIC-COOKIE-1")) {
 +            uint32_t sessionId = Server::instance()->newSessionId();
++            // FIXME for obvious reasons
 +            QHostAddress addr(QString("%1.%2.%3.%4").arg((uint) m_connectionAddresses.first()[0]).arg((uint) m_connectionAddresses.first()[1]).arg((uint) m_connectionAddresses.first()[2]).arg((uint) m_connectionAddresses.first()[3]));
 +            Display *display = Server::instance()->newDisplay(sessionId, addr.toString(), m_displayNumber);
++
 +            return new Accept(m_host, m_port, sessionId, m_authenticationName, m_authenticationData, "MIT-MAGIC-COOKIE-1", display->rawCookie());
-+        } else {
-+            return new Decline(m_host, m_port, Server::instance()->status(), m_authenticationName, m_authenticationData);
 +        }
++
++        return new Decline(m_host, m_port, Server::instance()->status(), m_authenticationName, m_authenticationData);
 +    }
 +
 +    Packet* Packet::Manage::onServerReceived() const {
 +        Display *display = Server::instance()->getDisplay(m_sessionID);
++
 +        if (display != nullptr) {
 +            display->start();
-+            return nullptr;
-+        } else {
-+            return new Refuse(m_host, m_port, m_sessionID);
++            return nullptr; // this packet doesn't have any response on success
 +        }
++
++        return new Refuse(m_host, m_port, m_sessionID);
 +    }
 +
 +    Packet* Packet::KeepAlive::onServerReceived() const {
 +        Display *display = Server::instance()->getDisplay(m_sessionID);
++
 +        if (display == nullptr)
 +            return new Alive(m_host, m_port, 0, m_sessionID);
-+        else if (display->displayId() != m_displayNumber)
++
++        if (display->displayId() != m_displayNumber)
 +            return new Alive(m_host, m_port, 0, m_sessionID);
-+        else {
-+            return new Alive(m_host, m_port, 1, m_sessionID);
-+        }
++
++        return new Alive(m_host, m_port, 1, m_sessionID);
 +    }
 +
 +/*******************************************************************************
@@ -731,7 +691,7 @@ index 0000000..90688d0
 +};
 diff --git a/src/daemon/xdmcp/Packet.h b/src/daemon/xdmcp/Packet.h
 new file mode 100644
-index 0000000..507b1b4
+index 0000000..9246541
 --- /dev/null
 +++ b/src/daemon/xdmcp/Packet.h
 @@ -0,0 +1,394 @@
@@ -807,21 +767,21 @@ index 0000000..507b1b4
 +        * \param port Source port of the packet
 +        * \return Parsed packet
 +        */
-+        static Packet *decode(const QByteArray& data, const QHostAddress& host = QHostAddress(), quint16 port = 0);
++        static Packet *decode(const QByteArray &data, const QHostAddress &host = QHostAddress(), quint16 port = 0);
 +
 +        /**
 +         * Set the packet's source/destination host
 +         *
 +         * \param host The host
 +         */
-+        void setHost(const QHostAddress host);
++        void setHost(const QHostAddress &host);
 +
 +        /**
 +         * Get the packet's source/destination host
 +         *
 +         * \return The host
 +         */
-+        QHostAddress host() const;
++        const QHostAddress& host() const;
 +
 +        /**
 +         * Set the packet's source/destination host
@@ -881,7 +841,7 @@ index 0000000..507b1b4
 +         * \param host Destination host for the response
 +         * \param port Destination port for the response
 +         */
-+        Packet(const QHostAddress& host, quint16 port);
++        Packet(const QHostAddress &host, quint16 port);
 +        /**
 +         * C'tor targetted for parsing raw data
 +         *
@@ -889,7 +849,7 @@ index 0000000..507b1b4
 +         * \param port Destination port for the response
 +         * \param r Reader containing the packet's raw data
 +         */
-+        Packet(const QHostAddress& host, quint16 port, Reader& r);
++        Packet(const QHostAddress &host, quint16 port, Reader &r);
 +
 +        QHostAddress m_host;
 +        quint16 m_port { 0 };
@@ -898,7 +858,7 @@ index 0000000..507b1b4
 +
 +    class Packet::BroadcastQuery : public Packet {
 +    public:
-+        BroadcastQuery(const QHostAddress& host, quint16 port, Reader& r);
++        BroadcastQuery(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        QVector<QByteArray> m_authenticationNames;
@@ -906,7 +866,7 @@ index 0000000..507b1b4
 +
 +    class Packet::Query : public Packet {
 +    public:
-+        Query(const QHostAddress& host, quint16 port, Reader& r);
++        Query(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Server side handling of Query packet
@@ -933,7 +893,7 @@ index 0000000..507b1b4
 +
 +    class Packet::IndirectQuery : public Packet {
 +    public:
-+        IndirectQuery(const QHostAddress& host, quint16 port, Reader& r);
++        IndirectQuery(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        QVector<QByteArray> m_authenticationNames;
@@ -941,7 +901,7 @@ index 0000000..507b1b4
 +
 +    class Packet::ForwardQuery : public Packet {
 +    public:
-+        ForwardQuery(const QHostAddress& host, quint16 port, Reader& r);
++        ForwardQuery(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        QByteArray m_clientAddress;
@@ -951,10 +911,10 @@ index 0000000..507b1b4
 +
 +    class Packet::Willing : public Packet {
 +    public:
-+        Willing(const QHostAddress& host, quint16 port, 
-+                const QString& authenticationName, const QString& hostname,
-+                const QString& status);
-+        Willing(const QHostAddress& host, quint16 port, Reader& r);
++        Willing(const QHostAddress &host, quint16 port, 
++                const QString &authenticationName, const QString &hostname,
++                const QString &status);
++        Willing(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Client side handling of Willing packet
@@ -974,9 +934,9 @@ index 0000000..507b1b4
 +
 +    class Packet::Unwilling : public Packet {
 +    public:
-+        Unwilling(const QHostAddress& host, quint16 port,
-+                  const QString& hostname, const QString& status);
-+        Unwilling(const QHostAddress& host, quint16 port, Reader& r);
++        Unwilling(const QHostAddress &host, quint16 port,
++                  const QString &hostname, const QString &status);
++        Unwilling(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        QByteArray m_hostname;
@@ -985,7 +945,7 @@ index 0000000..507b1b4
 +
 +    class Packet::Request : public Packet {
 +    public:
-+        Request(const QHostAddress& host, quint16 port, Reader& r);
++        Request(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Server side handling of Request packet
@@ -1016,10 +976,10 @@ index 0000000..507b1b4
 +
 +    class Packet::Accept : public Packet {
 +    public:
-+        Accept(const QHostAddress& host, quint16 port, uint32_t sessionId,
++        Accept(const QHostAddress &host, quint16 port, uint32_t sessionId,
 +               const QString authenticationName, const QByteArray authenticationData,
 +               const QString authorizationName, const QByteArray authorizationData);
-+        Accept(const QHostAddress& host, quint16 port, Reader& r);
++        Accept(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Client side handling of Accept packet
@@ -1041,9 +1001,9 @@ index 0000000..507b1b4
 +
 +    class Packet::Decline : public Packet {
 +    public:
-+        Decline(const QHostAddress& host, quint16 port, const QString status,
++        Decline(const QHostAddress &host, quint16 port, const QString status,
 +                const QString authenticationName, const QByteArray authenticationData);
-+        Decline(const QHostAddress& host, quint16 port, Reader& r);
++        Decline(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        QByteArray m_status;
@@ -1053,7 +1013,7 @@ index 0000000..507b1b4
 +
 +    class Packet::Manage : public Packet {
 +    public:
-+        Manage(const QHostAddress& host, quint16 port, Reader& r);
++        Manage(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Server side handling of Manage packet
@@ -1080,8 +1040,8 @@ index 0000000..507b1b4
 +
 +    class Packet::Refuse : public Packet {
 +    public:
-+        Refuse(const QHostAddress& host, quint16 port, uint32_t sessionID);
-+        Refuse(const QHostAddress& host, quint16 port, Reader& r);
++        Refuse(const QHostAddress &host, quint16 port, uint32_t sessionID);
++        Refuse(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        uint32_t m_sessionID;
@@ -1089,8 +1049,8 @@ index 0000000..507b1b4
 +
 +    class Packet::Failed : public Packet {
 +    public:
-+        Failed(const QHostAddress& host, quint16 port, uint32_t sessionID, const QString& status);
-+        Failed(const QHostAddress& host, quint16 port, Reader& r);
++        Failed(const QHostAddress &host, quint16 port, uint32_t sessionID, const QString &status);
++        Failed(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        uint32_t m_sessionID;
@@ -1099,7 +1059,7 @@ index 0000000..507b1b4
 +
 +    class Packet::KeepAlive : public Packet {
 +    public:
-+        KeepAlive(const QHostAddress& host, quint16 port, Reader& r);
++        KeepAlive(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +        /**
 +         * Server side handling of KeepAlive packet
@@ -1117,8 +1077,8 @@ index 0000000..507b1b4
 +
 +    class Packet::Alive : public Packet {
 +    public:
-+        Alive(const QHostAddress& host, quint16 port, uint8_t sessionRunning, uint32_t sessionID);
-+        Alive(const QHostAddress& host, quint16 port, Reader& r);
++        Alive(const QHostAddress &host, quint16 port, uint8_t sessionRunning, uint32_t sessionID);
++        Alive(const QHostAddress &host, quint16 port, Reader &r);
 +        virtual QByteArray encode() const;
 +    private:
 +        uint8_t m_sessionRunning;
@@ -1131,10 +1091,10 @@ index 0000000..507b1b4
 +#endif // SDDM_XDMCP_PACKET_H
 diff --git a/src/daemon/xdmcp/Server.cpp b/src/daemon/xdmcp/Server.cpp
 new file mode 100644
-index 0000000..edfdff4
+index 0000000..b4dc6e1
 --- /dev/null
 +++ b/src/daemon/xdmcp/Server.cpp
-@@ -0,0 +1,149 @@
+@@ -0,0 +1,148 @@
 +/*
 + * Server implementation for X Display Control Protocol
 + * Copyright (C) 2013  Martin Bříza <mbriza@redhat.com>
@@ -1174,9 +1134,8 @@ index 0000000..edfdff4
 +        return self;
 +    }
 +
-+    Server::Server(DaemonApp* parent)
-+        : QUdpSocket(parent)
-+        , m_hostname(QHostInfo::localHostName()) {
++    Server::Server(DaemonApp* parent) : QUdpSocket(parent),
++        m_hostname(QHostInfo::localHostName()) {
 +
 +    }
 +
@@ -1225,7 +1184,7 @@ index 0000000..edfdff4
 +        return m_lastSession++;
 +    }
 +
-+    Display* Server::newDisplay(uint32_t sessionId, QString hostName, uint32_t displayNumber) {
++    Display* Server::newDisplay(uint32_t sessionId, const QString &hostName, uint32_t displayNumber) {
 +        if (m_displays.contains(sessionId))
 +            return nullptr;
 +        Display *display = new Display(hostName, displayNumber, this);
@@ -1237,12 +1196,12 @@ index 0000000..edfdff4
 +    Display* Server::getDisplay(uint32_t id) {
 +        if (m_displays.contains(id))
 +            return m_displays[id];
-+        else
-+            return nullptr;
++        return nullptr;
 +    }
 +
 +    void Server::removeDisplay(QObject* obj) {
 +        int key = m_displays.key(qobject_cast<Display*>(obj), -1);
++
 +        if (key == -1)
 +            return;
 +
@@ -1286,7 +1245,7 @@ index 0000000..edfdff4
 +#include "Server.moc"
 diff --git a/src/daemon/xdmcp/Server.h b/src/daemon/xdmcp/Server.h
 new file mode 100644
-index 0000000..2898381
+index 0000000..6f7bdae
 --- /dev/null
 +++ b/src/daemon/xdmcp/Server.h
 @@ -0,0 +1,118 @@
@@ -1381,7 +1340,7 @@ index 0000000..2898381
 +        /**
 +         * Create a new display
 +         */
-+        Display *newDisplay(uint32_t sessionId, QString hostName, uint32_t displayNumber);
++        Display *newDisplay(uint32_t sessionId, const QString &hostName, uint32_t displayNumber);
 +        Display *getDisplay(uint32_t id);
 +        QString status() const;
 +        QString hostname() const;
@@ -1410,10 +1369,10 @@ index 0000000..2898381
 +#endif // SDDM_XDMCP_SERVER_H
 diff --git a/src/daemon/xdmcp/Utils.cpp b/src/daemon/xdmcp/Utils.cpp
 new file mode 100644
-index 0000000..92e1d6a
+index 0000000..53ac7e3
 --- /dev/null
 +++ b/src/daemon/xdmcp/Utils.cpp
-@@ -0,0 +1,145 @@
+@@ -0,0 +1,143 @@
 +/*
 + * Utilities for X Display Control Protocol
 + * Copyright (C) 2013  Martin Bříza <mbriza@redhat.com>
@@ -1441,28 +1400,27 @@ index 0000000..92e1d6a
 +namespace SDDM {
 +namespace XDMCP {
 +
-+    Reader::Reader(const QByteArray& data)
-+        : m_data(data)
-+        , m_stream(&m_data, QIODevice::ReadOnly | QIODevice::Unbuffered) {
++    Reader::Reader(const QByteArray &data) : m_data(data),
++        m_stream(&m_data, QIODevice::ReadOnly | QIODevice::Unbuffered) {
 +        m_stream.setByteOrder(QDataStream::BigEndian);
 +    }
 +
-+    Reader& Reader::operator>>(uint8_t& byte) {
++    Reader& Reader::operator>>(uint8_t &byte) {
 +        m_stream >> byte;
 +        return *this;
 +    }
 +
-+    Reader& Reader::operator>>(uint16_t& word) {
++    Reader& Reader::operator>>(uint16_t &word) {
 +        m_stream >> word;
 +        return *this;
 +    }
 +
-+    Reader& Reader::operator>>(uint32_t& doubleword) {
++    Reader& Reader::operator>>(uint32_t &doubleword) {
 +        m_stream >> doubleword;
 +        return *this;
 +    }
 +
-+    Reader& Reader::operator>>(QByteArray& array) {
++    Reader& Reader::operator>>(QByteArray &array) {
 +        uint16_t arrayLen;
 +        *this >> arrayLen;
 +        while (arrayLen--) {
@@ -1473,7 +1431,7 @@ index 0000000..92e1d6a
 +        return *this;
 +    }
 +
-+    Reader& Reader::operator>>(QVector< uint16_t >& wordArray) {
++    Reader& Reader::operator>>(QVector< uint16_t > &wordArray) {
 +        uint8_t arrayLen;
 +        *this >> arrayLen;
 +        while (arrayLen--) {
@@ -1484,7 +1442,7 @@ index 0000000..92e1d6a
 +        return *this;
 +    }
 +
-+    Reader& Reader::operator>>(QVector< QByteArray >& arrayOfArrays) {
++    Reader& Reader::operator>>(QVector< QByteArray > &arrayOfArrays) {
 +        uint8_t arrayCount;
 +        *this >> arrayCount;
 +        while (arrayCount--) {
@@ -1502,9 +1460,8 @@ index 0000000..92e1d6a
 +            return false;
 +    }
 +
-+    Writer::Writer()
-+        : m_data()
-+        , m_stream(&m_data, QIODevice::WriteOnly | QIODevice::Unbuffered) {
++    Writer::Writer() : m_data(),
++        m_stream(&m_data, QIODevice::WriteOnly | QIODevice::Unbuffered) {
 +        m_stream.setByteOrder(QDataStream::BigEndian);
 +    }
 +
@@ -1524,23 +1481,23 @@ index 0000000..92e1d6a
 +        return *this;
 +    }
 +
-+    Writer& Writer::operator<<(const QByteArray& array) {
++    Writer& Writer::operator<<(const QByteArray &array) {
 +        *this << (uint16_t) array.count();
 +        for (uint8_t c : array)
 +            m_stream << c;
 +        return *this;
 +    }
 +
-+    Writer& Writer::operator<<(const QVector< uint16_t >& wordArray) {
++    Writer& Writer::operator<<(const QVector< uint16_t > &wordArray) {
 +        *this << (uint8_t) wordArray.count();
-+        for (const uint16_t& i : wordArray)
++        for (const uint16_t &i : wordArray)
 +            *this << i;
 +        return *this;
 +    }
 +
-+    Writer& Writer::operator<<(const QVector< QByteArray >& arrayOfArrays) {
++    Writer& Writer::operator<<(const QVector< QByteArray > &arrayOfArrays) {
 +        *this << (uint16_t) arrayOfArrays.count();
-+        for (const QByteArray& i : arrayOfArrays)
++        for (const QByteArray &i : arrayOfArrays)
 +            *this << i;
 +        return *this;
 +    }
@@ -1562,7 +1519,7 @@ index 0000000..92e1d6a
 \ No newline at end of file
 diff --git a/src/daemon/xdmcp/Utils.h b/src/daemon/xdmcp/Utils.h
 new file mode 100644
-index 0000000..9457ef1
+index 0000000..bd96708
 --- /dev/null
 +++ b/src/daemon/xdmcp/Utils.h
 @@ -0,0 +1,93 @@
@@ -1609,12 +1566,12 @@ index 0000000..9457ef1
 +        public:
 +            Reader(const QByteArray &data);
 +            ~Reader() {}
-+            Reader& operator>>(uint8_t& byte);
-+            Reader& operator>>(uint16_t& word);
-+            Reader& operator>>(uint32_t& doubleword);
-+            Reader& operator>>(QByteArray& array);
-+            Reader& operator>>(QVector<uint16_t>& wordArray);
-+            Reader& operator>>(QVector<QByteArray>& arrayOfArrays);
++            Reader& operator>>(uint8_t &byte);
++            Reader& operator>>(uint16_t &word);
++            Reader& operator>>(uint32_t &doubleword);
++            Reader& operator>>(QByteArray &array);
++            Reader& operator>>(QVector<uint16_t> &wordArray);
++            Reader& operator>>(QVector<QByteArray> &arrayOfArrays);
 +            /**
 +             * Returns true if the stream is at its end and no errors occured
 +             *
@@ -1640,9 +1597,9 @@ index 0000000..9457ef1
 +            Writer& operator<<(const uint8_t byte);
 +            Writer& operator<<(const uint16_t word);
 +            Writer& operator<<(const uint32_t doubleword);
-+            Writer& operator<<(const QByteArray& array);
-+            Writer& operator<<(const QVector<uint16_t>& wordArray);
-+            Writer& operator<<(const QVector<QByteArray>& arrayOfArrays);
++            Writer& operator<<(const QByteArray &array);
++            Writer& operator<<(const QVector<uint16_t> &wordArray);
++            Writer& operator<<(const QVector<QByteArray> &arrayOfArrays);
 +            /**
 +             * Finalizes building of the packet
 +             *
