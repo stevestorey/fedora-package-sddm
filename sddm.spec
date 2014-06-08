@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.25.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.26.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -142,6 +142,9 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %{_datadir}/apps/sddm/themes/maui/
 
 %changelog
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-0.26.20131125git7a008602
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Thu May 01 2014 Rex Dieter <rdieter@fedoraproject.org> 0.2.0-0.25.20131125git7a008602
 - update pam config (+pam_kwallet,-pam_mate_keyring)
 
