@@ -124,14 +124,12 @@ exit 0
 %attr(0711,root,root) %dir %{_localstatedir}/run/sddm
 %{_unitdir}/sddm.service
 %{_qt4_importdir}/SddmComponents/
-# or add Requires: kde-filesystem -- rex
-%dir %{_datadir}/apps
-%dir %{_datadir}/apps/sddm
+%dir %{_datadir}/sddm
 %{_datadir}/sddm/faces/
 %{_datadir}/sddm/flags/
 %{_datadir}/sddm/scripts/
 %{_datadir}/sddm/sddm.conf.sample
-%dir %{_datadir}/apps/sddm/themes/
+%dir %{_datadir}/sddm/themes/
 # default fedora theme
 %{_datadir}/sddm/themes/fedora/
 # %%lang'ify ? -- rex
