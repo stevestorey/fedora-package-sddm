@@ -1,9 +1,9 @@
 %global _hardened_build 1
-%global sddm_commit 7a008602f5f0a4ed8586ce24012983458a687d4e
+%global sddm_commit db1d7381754a01a69b0f4c579c0267d80183c066
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.26.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.27.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -13,24 +13,19 @@ Source0:        https://github.com/MartinBriza/sddm/archive/%{sddm_commit}.tar.g
 
 # fedora standard sddm.conf
 Source10:       sddm.conf
-# Originally kdm config, shamelessly stolen from gdm
+# Shamelessly stolen from gdm
 Source11:       sddm.pam
+# Shamelessly stolen from gdm
+Source12:       sddm-autologin.pam
 # We need to ship our own service file to handle Fedora-specific cases
-Source12:       sddm.service
+Source13:       sddm.service
 # systesmd tmpfiles support for /var/run/sddm
-Source13:       tmpfiles-sddm.conf
+Source14:       tmpfiles-sddm.conf
 
 # fedora theme files
 Source21:       fedora-Main.qml
 Source22:       fedora-metadata.desktop
 Source23:       fedora-theme.conf
-
-# Patch setting a better order of the xsessions and hiding the custom one
-Patch2:         sddm-git.e707e229-session-list.patch
-
-Patch3:         sddm-0.2.0-0.11.20130914git50ca5b20-xdmcp.patch
-# Don't end the PAM session twice
-Patch4:         sddm-pam_end.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -50,7 +45,10 @@ Requires: system-logos
 Requires: systemd
 Requires: xorg-x11-xinit
 Requires: xorg-x11-server-Xorg
+Requires: %{name}-helper
 %{?systemd_requires}
+
+Requires(pre): shadow-utils
 
 %description
 SDDM is a modern display manager for X11 aiming to be fast, simple and
@@ -70,13 +68,6 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %prep
 %setup -q -n %{name}-%{sddm_commit}
 
-%patch2 -p1 -b .session-list
-%patch3 -p1 -b .xdmcp
-%patch4 -p1 -b .pam_end
-
-# get rid of the architecture flag
-sed -i "s/-march=native//" CMakeLists.txt
-
 
 %build
 mkdir -p %{_target_platform}
@@ -92,15 +83,23 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
 install -Dpm 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/sddm.conf
 install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
-install -Dpm 644 %{SOURCE12} %{buildroot}%{_unitdir}/sddm.service
-install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
+install -Dpm 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/sddm-autologin
+install -Dpm 644 %{SOURCE13} %{buildroot}%{_unitdir}/sddm.service
+install -Dpm 644 %{SOURCE14} %{buildroot}%{_tmpfilesdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 
 # install fedora theme
-install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/Main.qml
-install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/metadata.desktop
-install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/theme.conf
+install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/fedora/Main.qml
+install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/sddm/themes/fedora/metadata.desktop
+install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/fedora/theme.conf
 
+
+%pre
+getent group sddm >/dev/null || groupadd -r sddm
+getent passwd sddm >/dev/null || \
+    useradd -r -g sddm -d /var/lib/sddm -s /sbin/nologin \
+    -c "Simple Desktop Display Manager" sddm
+exit 0
 
 %post
 %systemd_post sddm.service
@@ -109,15 +108,18 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 %systemd_preun sddm.service
 
 %postun
-%systemd_postun sddm.service 
+%systemd_postun sddm.service
 
 %files
 %doc COPYING README.md CONTRIBUTORS
 %config %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
+%config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
+%config(noreplace)   %{_sysconfdir}/pam.d/sddm-greeter
 %config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
+%{_libexecdir}/sddm-helper
 %{_tmpfilesdir}/sddm.conf
 %attr(0711,root,root) %dir %{_localstatedir}/run/sddm
 %{_unitdir}/sddm.service
@@ -125,23 +127,28 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/apps/sddm/themes/fedora/the
 # or add Requires: kde-filesystem -- rex
 %dir %{_datadir}/apps
 %dir %{_datadir}/apps/sddm
-%{_datadir}/apps/sddm/faces/
-%{_datadir}/apps/sddm/flags/
-%{_datadir}/apps/sddm/scripts/
-%{_datadir}/apps/sddm/sddm.conf.sample
+%{_datadir}/sddm/faces/
+%{_datadir}/sddm/flags/
+%{_datadir}/sddm/scripts/
+%{_datadir}/sddm/sddm.conf.sample
 %dir %{_datadir}/apps/sddm/themes/
 # default fedora theme
-%{_datadir}/apps/sddm/themes/fedora/
+%{_datadir}/sddm/themes/fedora/
 # %%lang'ify ? -- rex
-%{_datadir}/apps/sddm/translations/
+%{_datadir}/sddm/translations/
 
 %files themes
-%{_datadir}/apps/sddm/themes/circles/
-%{_datadir}/apps/sddm/themes/elarun/
-%{_datadir}/apps/sddm/themes/maldives/
-%{_datadir}/apps/sddm/themes/maui/
+%{_datadir}/sddm/themes/circles/
+%{_datadir}/sddm/themes/elarun/
+%{_datadir}/sddm/themes/maldives/
+%{_datadir}/sddm/themes/maui/
 
 %changelog
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-0.27.20131125gitdb1d7381
+- Updated to the latest upstream git
+- Notable changes: Greeter runs under the sddm user, it's possible to configure display setup, different install paths in /usr/share
+- Resolves: #1034414 #1035939 #1035950 #1036308 #1038548 #1045722 #1045937 #1065715 #1082229 #1007067 #1027711 #1031745 #1008951 #1016902 #1031415 #1020921
+
 * Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-0.26.20131125git7a008602
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
