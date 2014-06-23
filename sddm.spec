@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.27.20131125git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.28.20140623git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -45,7 +45,6 @@ Requires: system-logos
 Requires: systemd
 Requires: xorg-x11-xinit
 Requires: xorg-x11-server-Xorg
-Requires: %{name}-helper
 %{?systemd_requires}
 
 Requires(pre): shadow-utils
@@ -142,7 +141,10 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
-* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-0.27.20131125gitdb1d7381
+* Sun Jun 08 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.27.20140623gitdb1d7381
+- Fix Requires, release
+
+* Sun Jun 08 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.27.20131125gitdb1d7381
 - Updated to the latest upstream git
 - Notable changes: Greeter runs under the sddm user, it's possible to configure display setup, different install paths in /usr/share
 - Resolves: #1034414 #1035939 #1035950 #1036308 #1038548 #1045722 #1045937 #1065715 #1082229 #1007067 #1027711 #1031745 #1008951 #1016902 #1031415 #1020921
