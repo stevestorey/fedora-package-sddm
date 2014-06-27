@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.30.20140627git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.31.20140627git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -142,9 +142,11 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Fri Jun 27 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.31.20140627gitf49c2c79
+- Patch unitialized values in signal handler in the daemon
+
 * Fri Jun 27 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.30.20140627gitf49c2c79
 - Bump to latest upstream, switch back to sddm project
-- Patch unitialized values in signal handler in the daemon
 - Drop sddm.service
 - Enable manpage and journald support
 
