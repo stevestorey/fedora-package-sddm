@@ -25,6 +25,8 @@ Source21:       fedora-Main.qml
 Source22:       fedora-metadata.desktop
 Source23:       fedora-theme.conf
 
+Patch1:         0001-Initialize-sigactions-in-signal-handlers.patch
+
 Provides: service(graphical-login) = sddm
 
 BuildRequires:  cmake
@@ -65,7 +67,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
-
+%patch1 -p1 -b .signals
 
 %build
 mkdir -p %{_target_platform}
@@ -142,6 +144,7 @@ exit 0
 %changelog
 * Fri Jun 27 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.30.20140627gitf49c2c79
 - Bump to latest upstream, switch back to sddm project
+- Patch unitialized values in signal handler in the daemon
 - Drop sddm.service
 - Enable manpage and journald support
 
