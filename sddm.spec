@@ -1,15 +1,15 @@
 %global _hardened_build 1
-%global sddm_commit db1d7381754a01a69b0f4c579c0267d80183c066
+%global sddm_commit f49c2c79b76078169f22cb0f85973cebc70333de
 
 Name:           sddm
 Version:        0.2.0
-Release:        0.29.20140623git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        0.30.20140627git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
-Source0:        https://github.com/MartinBriza/sddm/archive/%{sddm_commit}.tar.gz
+Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
 
 # fedora standard sddm.conf
 Source10:       sddm.conf
@@ -17,8 +17,6 @@ Source10:       sddm.conf
 Source11:       sddm.pam
 # Shamelessly stolen from gdm
 Source12:       sddm-autologin.pam
-# We need to ship our own service file to handle Fedora-specific cases
-Source13:       sddm.service
 # systesmd tmpfiles support for /var/run/sddm
 Source14:       tmpfiles-sddm.conf
 
@@ -35,6 +33,7 @@ BuildRequires:  pam-devel
 BuildRequires:  libxcb-devel
 BuildRequires:  qt4-devel
 BuildRequires:  pkgconfig
+BuildRequires:  python-docutils
 
 Obsoletes: kde-settings-sddm < 20-5
 
@@ -71,7 +70,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %build
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
-%{cmake} ..
+%{cmake} -DBUILD_MAN_PAGES=true -DENABLE_JOURNALD=true ..
 popd
 
 make %{?_smp_mflags} -C %{_target_platform}
@@ -83,7 +82,6 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 install -Dpm 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/sddm.conf
 install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/sddm-autologin
-install -Dpm 644 %{SOURCE13} %{buildroot}%{_unitdir}/sddm.service
 install -Dpm 644 %{SOURCE14} %{buildroot}%{_tmpfilesdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 
@@ -133,6 +131,7 @@ exit 0
 %{_datadir}/sddm/themes/fedora/
 # %%lang'ify ? -- rex
 %{_datadir}/sddm/translations/
+%{_mandir}/man*/sddm*
 
 %files themes
 %{_datadir}/sddm/themes/circles/
@@ -141,7 +140,12 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
-* Tue Jun 24 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.28.20140623gitdb1d7381
+* Fri Jun 27 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.30.20140627gitf49c2c79
+- Bump to latest upstream, switch back to sddm project
+- Drop sddm.service
+- Enable manpage and journald support
+
+* Tue Jun 24 2014 Martin Briza <mbriza@redhat.com> - 0.2.0-0.29.20140623gitdb1d7381
 - Fix default config to respect the new /usr/share paths
 - Fixed multiple users after autologin
 
