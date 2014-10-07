@@ -23,8 +23,8 @@
 ***************************************************************************/
 
 
-import QtQuick 1.1
-import SddmComponents 1.1
+import QtQuick 2.0
+import SddmComponents 2.0
 
 Rectangle {
 
@@ -226,10 +226,25 @@ Rectangle {
         }
     }
 
+    // doesn't do anything :/
     Component.onCompleted: {
         if (name.text === "")
-            name.focus = true
+            name.forceActiveFocus()
         else
-            password.focus = true
+            password.forceActiveFocus()
+        hackTimer.start()
+    }
+
+    // can't tell why it doesn't set the focus when component is completed, this hacks around it
+    Timer {
+        id: hackTimer
+        interval: 100
+        repeat: false
+        onTriggered: {
+            if (name.text === "")
+                name.forceActiveFocus()
+            else
+                password.forceActiveFocus()
+        }
     }
 }

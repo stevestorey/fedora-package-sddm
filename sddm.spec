@@ -1,9 +1,9 @@
 %global _hardened_build 1
-%global sddm_commit f49c2c79b76078169f22cb0f85973cebc70333de
+%global sddm_commit 6a28c29b2914a24f56fe9a7cff82550738672dfb
 
 Name:           sddm
-Version:        0.2.0
-Release:        0.32.20140627git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Version:        0.9.0
+Release:        1.20141007git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -11,21 +11,19 @@ Summary:        QML based X11 desktop manager
 Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
 
-# fedora standard sddm.conf
-Source10:       sddm.conf
+# Default configuration is handled by the binary itself
+Source10:       Configuration.h
 # Shamelessly stolen from gdm
 Source11:       sddm.pam
 # Shamelessly stolen from gdm
 Source12:       sddm-autologin.pam
-# systesmd tmpfiles support for /var/run/sddm
-Source14:       tmpfiles-sddm.conf
+# systemd tmpfiles support for /var/run/sddm
+Source13:       tmpfiles-sddm.conf
 
 # fedora theme files
 Source21:       fedora-Main.qml
 Source22:       fedora-metadata.desktop
 Source23:       fedora-theme.conf
-
-Patch1:         0001-Initialize-sigactions-in-signal-handlers.patch
 
 Provides: service(graphical-login) = sddm
 
@@ -33,7 +31,9 @@ BuildRequires:  cmake
 BuildRequires:  systemd
 BuildRequires:  pam-devel
 BuildRequires:  libxcb-devel
-BuildRequires:  qt4-devel
+BuildRequires:  qt5-qtbase-devel
+BuildRequires:  qt5-qtdeclarative-devel
+BuildRequires:  qt5-qttools-devel
 BuildRequires:  pkgconfig
 BuildRequires:  python-docutils
 
@@ -43,6 +43,8 @@ Obsoletes: kde-settings-sddm < 20-5
 Requires: desktop-backgrounds-compat
 # for /usr/share/pixmaps/system-logo-white.png
 Requires: system-logos
+Requires: qt5-qtbase-gui
+Requires: qt5-qtdeclarative
 Requires: systemd
 Requires: xorg-x11-xinit
 Requires: xorg-x11-server-Xorg
@@ -67,12 +69,13 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 %prep
 %setup -q -n %{name}-%{sddm_commit}
-%patch1 -p1 -b .signals
+cp %{SOURCE10} src/common/
+
 
 %build
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
-%{cmake} -DBUILD_MAN_PAGES=true -DENABLE_JOURNALD=true ..
+%{cmake} -DUSE_QT5=true -DBUILD_MAN_PAGES=true -DENABLE_JOURNALD=true ..
 popd
 
 make %{?_smp_mflags} -C %{_target_platform}
@@ -81,10 +84,9 @@ make %{?_smp_mflags} -C %{_target_platform}
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
-install -Dpm 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/sddm.conf
 install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/sddm-autologin
-install -Dpm 644 %{SOURCE14} %{buildroot}%{_tmpfilesdir}/sddm.conf
+install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 
 # install fedora theme
@@ -111,7 +113,6 @@ exit 0
 
 %files
 %doc COPYING README.md CONTRIBUTORS
-%config %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-greeter
@@ -122,12 +123,11 @@ exit 0
 %{_tmpfilesdir}/sddm.conf
 %attr(0711,root,root) %dir %{_localstatedir}/run/sddm
 %{_unitdir}/sddm.service
-%{_qt4_importdir}/SddmComponents/
+%{_qt5_archdatadir}/qml/SddmComponents/
 %dir %{_datadir}/sddm
 %{_datadir}/sddm/faces/
 %{_datadir}/sddm/flags/
 %{_datadir}/sddm/scripts/
-%{_datadir}/sddm/sddm.conf.sample
 %dir %{_datadir}/sddm/themes/
 # default fedora theme
 %{_datadir}/sddm/themes/fedora/
@@ -142,6 +142,13 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Tue Oct 07 2014 Martin Briza <mbriza@redhat.com> - 0.9.0-1.20141007git6a28c29b
+- Bump to latest upstream git (and a new release)
+- Hack around focus problem in the Fedora theme
+- Compile against Qt5
+- Removed upstreamed patch and files
+- Resolves: #1114192 #1119777 #1123506 #1125129 #1140386 #1112841 #1128463 #1128465 #1149608 #1149628 #1148659 #1148660 #1149610 #1149629
+
 * Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-0.32.20140627gitf49c2c79
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
