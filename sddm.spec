@@ -3,7 +3,7 @@
 
 Name:           sddm
 Version:        0.9.0
-Release:        1.20141007git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Release:        2.20141007git%(echo %{sddm_commit} | cut -c-8)%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -142,6 +142,10 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Thu Oct 09 2014 Martin Briza <mbriza@redhat.com> - 0.9.0-2.20141007git6a28c29b
+- Remove pam_gnome_keyring.so (temporarily) from sddm.pam to fix impossibility to log out
+- Resolves: #1150283
+
 * Tue Oct 07 2014 Martin Briza <mbriza@redhat.com> - 0.9.0-1.20141007git6a28c29b
 - Bump to latest upstream git (and a new release)
 - Hack around focus problem in the Fedora theme
