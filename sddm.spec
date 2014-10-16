@@ -1,15 +1,14 @@
 %global _hardened_build 1
-%global sddm_commit 6a28c29b2914a24f56fe9a7cff82550738672dfb
 
 Name:           sddm
-Version:        0.9.0
-Release:        2.20141007git%(echo %{sddm_commit} | cut -c-8)%{?dist}
+Version:        0.10.0
+Release:        1%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
 
 Url:            https://github.com/sddm/sddm
-Source0:        https://github.com/sddm/sddm/archive/%{sddm_commit}.tar.gz
+Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 # Default configuration is handled by the binary itself
 Source10:       Configuration.h
@@ -68,7 +67,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 
 %prep
-%setup -q -n %{name}-%{sddm_commit}
+%setup -q -n %{name}-%{version}
 cp %{SOURCE10} src/common/
 
 
@@ -142,6 +141,9 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Thu Oct 16 2014 Martin Briza <mbriza@redhat.com> - 0.10.0-1
+- Bump to 0.10.0
+
 * Thu Oct 09 2014 Martin Briza <mbriza@redhat.com> - 0.9.0-2.20141007git6a28c29b
 - Remove pam_gnome_keyring.so (temporarily) from sddm.pam to fix impossibility to log out
 - Resolves: #1150283
