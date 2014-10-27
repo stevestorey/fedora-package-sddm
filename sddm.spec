@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.10.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -18,6 +18,8 @@ Source11:       sddm.pam
 Source12:       sddm-autologin.pam
 # systemd tmpfiles support for /var/run/sddm
 Source13:       tmpfiles-sddm.conf
+# sample sddm.conf generated with sddm --example-config, and entries commented-out
+Source14: sddm.conf
 
 # fedora theme files
 Source21:       fedora-Main.qml
@@ -86,7 +88,9 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/sddm-autologin
 install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
+install -Dpm 644 %{SOURCE14} %{buildroot}%{_sysconfdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
+mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
 
 # install fedora theme
 install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/fedora/Main.qml
@@ -97,7 +101,7 @@ install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/fedora/theme.co
 %pre
 getent group sddm >/dev/null || groupadd -r sddm
 getent passwd sddm >/dev/null || \
-    useradd -r -g sddm -d /var/lib/sddm -s /sbin/nologin \
+    useradd -r -g sddm -d %{_localstatedir}/lib/sddm -s /sbin/nologin \
     -c "Simple Desktop Display Manager" sddm
 exit 0
 
@@ -112,15 +116,18 @@ exit 0
 
 %files
 %doc COPYING README.md CONTRIBUTORS
+%config(noreplace)   %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-greeter
-%config(noreplace)   %{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
+# it's under /etc, sure, but it's not a config file -- rex
+%{_sysconfdir}/dbus-1/system.d/org.freedesktop.DisplayManager.conf
 %{_bindir}/sddm
 %{_bindir}/sddm-greeter
 %{_libexecdir}/sddm-helper
 %{_tmpfilesdir}/sddm.conf
-%attr(0711,root,root) %dir %{_localstatedir}/run/sddm
+%attr(0711, root, sddm) %dir %{_localstatedir}/run/sddm
+%attr(1770, sddm, sddm) %dir %{_localstatedir}/lib/sddm
 %{_unitdir}/sddm.service
 %{_qt5_archdatadir}/qml/SddmComponents/
 %dir %{_datadir}/sddm
@@ -141,6 +148,11 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Mon Oct 27 2014 Rex Dieter <rdieter@fedoraproject.org> - 0.10.0-2
+- create/own %%{_sysconfdir}/sddm.conf, %%{_localstatedir}/lib/sddm (#1155898)
+- don't mark stuff under /etc/dbus-1 %%config
+- make %%{_localstatedir}/run/sddm group writable
+
 * Thu Oct 16 2014 Martin Briza <mbriza@redhat.com> - 0.10.0-1
 - Bump to 0.10.0
 
