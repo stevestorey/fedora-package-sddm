@@ -70,8 +70,6 @@ Rectangle {
         }
 
         Rectangle {
-            x: geometry.x
-            y: geometry.y
             width: parent.width
             height: 34
 
@@ -80,8 +78,8 @@ Rectangle {
         }
 
         Row {
-            x: parent.x + 4
-            y: parent.y + 4
+            x: 4
+            y: 4
             spacing: 4
             width: parent.width - 8
             z: 100
@@ -138,8 +136,7 @@ Rectangle {
         }
 
         Rectangle {
-            x: parent.x
-            y: parent.y + parent.height/2
+            y: parent.height/2
             width: parent.width
             height: parent.height/2
             color: "transparent"

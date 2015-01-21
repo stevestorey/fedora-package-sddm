@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.10.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -148,6 +148,10 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Wed Jan 21 2015 Martin Briza <mbriza@redhat.com> - 0.10.0-3
+- Fixed positioning in the Fedora theme
+- Resolves: #1183207
+
 * Mon Oct 27 2014 Rex Dieter <rdieter@fedoraproject.org> - 0.10.0-2
 - create/own %%{_sysconfdir}/sddm.conf, %%{_localstatedir}/lib/sddm (#1155898)
 - don't mark stuff under /etc/dbus-1 %%config
