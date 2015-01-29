@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.10.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -48,7 +48,9 @@ Requires: qt5-qtbase-gui
 Requires: qt5-qtdeclarative
 Requires: systemd
 Requires: xorg-x11-xinit
+%ifnarch s390 s390x
 Requires: xorg-x11-server-Xorg
+%endif
 %{?systemd_requires}
 
 Requires(pre): shadow-utils
@@ -148,6 +150,9 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Thu Jan 29 2015 Dan Horák <dan[at]danny.cz> - 0.10.0-4
+- don't Require Xorg server on s390(x)
+
 * Wed Jan 21 2015 Martin Briza <mbriza@redhat.com> - 0.10.0-3
 - Fixed positioning in the Fedora theme
 - Resolves: #1183207
