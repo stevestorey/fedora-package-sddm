@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.10.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -150,6 +150,9 @@ exit 0
 %{_datadir}/sddm/themes/maui/
 
 %changelog
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 0.10.0-5
+- Rebuilt for GCC 5 C++11 ABI change
+
 * Thu Jan 29 2015 Dan Horák <dan[at]danny.cz> - 0.10.0-4
 - don't Require Xorg server on s390(x)
 
