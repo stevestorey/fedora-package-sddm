@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
 Name:           sddm
-Version:        0.10.0
-Release:        6%{?dist}
+Version:        0.11.0
+Release:        1%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -10,8 +10,21 @@ Summary:        QML based X11 desktop manager
 Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
-# Default configuration is handled by the binary itself
-Source10:       Configuration.h
+## upstream patches
+Patch1: 0001-Replace-signal-handling-method-of-detecting-X-startu.patch
+Patch19: 0019-handle-merge-of-libsystemd-journal-libsystemd-for-sy.patch
+Patch28: 0028-Correcting-small-typo-in-TextConstants.qml.patch
+Patch34: 0034-fix-typo.patch
+Patch45: 0045-Provid-the-role-needsPassword-in-UserModel.patch
+Patch49: 0049-Set-showPassword-according-to-needsPassword-role-in-.patch
+Patch50: 0050-Add-a-note-about-needsPassword-role-and-shadow.patch
+Patch59: 0059-Add-new-platformTheme-key-to-themes.patch
+Patch69: 0069-Clock-Do-not-hardcode-date-format.patch
+
+## downstream patches
+# downstream fedora-specific configuration
+Patch101: sddm-0.11.0-fedora_config.patch
+
 # Shamelessly stolen from gdm
 Source11:       sddm.pam
 # Shamelessly stolen from gdm
@@ -29,14 +42,14 @@ Source23:       fedora-theme.conf
 Provides: service(graphical-login) = sddm
 
 BuildRequires:  cmake
-BuildRequires:  systemd
-BuildRequires:  pam-devel
 BuildRequires:  libxcb-devel
+BuildRequires:  pam-devel
+BuildRequires:  pkgconfig(systemd)
+BuildRequires:  python-docutils
 BuildRequires:  qt5-qtbase-devel
 BuildRequires:  qt5-qtdeclarative-devel
 BuildRequires:  qt5-qttools-devel
-BuildRequires:  pkgconfig
-BuildRequires:  python-docutils
+BuildRequires:  systemd
 
 Obsoletes: kde-settings-sddm < 20-5
 
@@ -71,14 +84,17 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 
 %prep
-%setup -q -n %{name}-%{version}
-cp %{SOURCE10} src/common/
+%autosetup -p1
 
 
 %build
-mkdir -p %{_target_platform}
+mkdir %{_target_platform}
 pushd %{_target_platform}
-%{cmake} -DUSE_QT5=true -DBUILD_MAN_PAGES=true -DENABLE_JOURNALD=true ..
+%{cmake} .. \
+  -DBUILD_MAN_PAGES:BOOL=ON \
+  -DENABLE_JOURNALD:BOOL=ON \
+  -DSESSION_COMMAND:PATH=/etc/X11/xinit/Xsession \
+  -DUSE_QT5:BOOL=ON
 popd
 
 make %{?_smp_mflags} -C %{_target_platform}
@@ -95,9 +111,9 @@ mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
 
 # install fedora theme
-install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/fedora/Main.qml
-install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/sddm/themes/fedora/metadata.desktop
-install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/fedora/theme.conf
+install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/02-fedora/Main.qml
+install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/sddm/themes/02-fedora/metadata.desktop
+install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/02-fedora/theme.conf
 
 
 %pre
@@ -109,6 +125,12 @@ exit 0
 
 %post
 %systemd_post sddm.service
+# handle theme rename: fedora => 02-fedora
+(grep '^Current=fedora$' %{_sysconfdir}/sddm.conf > /dev/null && \
+ sed -i.rpmsave -e 's|^Current=fedora$|Current=02-fedora|' \
+ %{_sysconfdir}/sddm.conf
+) ||:
+
 
 %preun
 %systemd_preun sddm.service
@@ -137,11 +159,14 @@ exit 0
 %{_datadir}/sddm/flags/
 %{_datadir}/sddm/scripts/
 %dir %{_datadir}/sddm/themes/
-# default fedora theme
-%{_datadir}/sddm/themes/fedora/
+# default non-userlist fedora theme
+%{_datadir}/sddm/themes/02-fedora/
 # %%lang'ify ? -- rex
 %{_datadir}/sddm/translations/
-%{_mandir}/man*/sddm*
+%{_mandir}/man1/sddm.1*
+%{_mandir}/man1/sddm-greeter.1*
+%{_mandir}/man5/sddm.conf.5*
+%{_mandir}/man5/sddm-state.conf.5*
 
 %files themes
 %{_datadir}/sddm/themes/circles/
@@ -149,7 +174,12 @@ exit 0
 %{_datadir}/sddm/themes/maldives/
 %{_datadir}/sddm/themes/maui/
 
+
 %changelog
+* Thu Aug 06 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.11.0-1
+- sddm-0.11 (#1209689), plus pull in a few post 0.11.0 upstream fixes
+- Enable two fedora themes, allowing user selector as default (#1250204)
+
 * Fri Jun 19 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.0-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
