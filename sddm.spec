@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.11.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -139,7 +139,9 @@ exit 0
 %systemd_postun sddm.service
 
 %files
-%doc COPYING README.md CONTRIBUTORS
+%{!?_licensedir:%global license %%doc}
+%license COPYING
+%doc README.md CONTRIBUTORS
 %config(noreplace)   %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
@@ -176,6 +178,9 @@ exit 0
 
 
 %changelog
+* Wed Sep 02 2015 Rex Dieter <rdieter@fedoraproject.org> 0.11.0-2
+- use %%license tag
+
 * Thu Aug 06 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.11.0-1
 - sddm-0.11 (#1209689), plus pull in a few post 0.11.0 upstream fixes
 - Enable two fedora themes, allowing user selector as default (#1250204)
