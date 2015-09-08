@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
 Name:           sddm
-Version:        0.11.0
-Release:        2%{?dist}
+Version:        0.12.0
+Release:        1%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -11,15 +11,6 @@ Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 ## upstream patches
-Patch1: 0001-Replace-signal-handling-method-of-detecting-X-startu.patch
-Patch19: 0019-handle-merge-of-libsystemd-journal-libsystemd-for-sy.patch
-Patch28: 0028-Correcting-small-typo-in-TextConstants.qml.patch
-Patch34: 0034-fix-typo.patch
-Patch45: 0045-Provid-the-role-needsPassword-in-UserModel.patch
-Patch49: 0049-Set-showPassword-according-to-needsPassword-role-in-.patch
-Patch50: 0050-Add-a-note-about-needsPassword-role-and-shadow.patch
-Patch59: 0059-Add-new-platformTheme-key-to-themes.patch
-Patch69: 0069-Clock-Do-not-hardcode-date-format.patch
 
 ## downstream patches
 # downstream fedora-specific configuration
@@ -44,6 +35,7 @@ Provides: service(graphical-login) = sddm
 BuildRequires:  cmake
 BuildRequires:  libxcb-devel
 BuildRequires:  pam-devel
+BuildRequires:  pkgconfig(libsystemd-journal)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  python-docutils
 BuildRequires:  qt5-qtbase-devel
@@ -178,6 +170,9 @@ exit 0
 
 
 %changelog
+* Tue Sep 08 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-1
+- 0.12.0
+
 * Wed Sep 02 2015 Rex Dieter <rdieter@fedoraproject.org> 0.11.0-2
 - use %%license tag
 
