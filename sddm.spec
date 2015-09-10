@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.12.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -170,6 +170,9 @@ exit 0
 
 
 %changelog
+* Thu Sep 10 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-2
+- sddm.pam: add pam_kwallet5 support
+
 * Tue Sep 08 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-1
 - 0.12.0
 
