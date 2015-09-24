@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.12.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -11,7 +11,7 @@ Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 ## upstream patches
-Patch8: 0008-Inherit-path-environment-variables-from-parent.patch
+#Patch8: 0008-Inherit-path-environment-variables-from-parent.patch
 Patch11: 0011-Don-t-cast-QByteArray-to-char.patch
 
 ## downstream patches
@@ -172,6 +172,9 @@ exit 0
 
 
 %changelog
+* Thu Sep 24 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-4
+- omit 0008-Inherit-path-environment-variables-from-parent.patch pending security concerns
+
 * Thu Sep 24 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.12.0-3
 - pull in upstream fixes (#1265813)
 - fedora theme QML error (#1264946)
