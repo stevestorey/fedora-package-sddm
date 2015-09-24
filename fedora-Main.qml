@@ -108,7 +108,6 @@ Rectangle {
             }
 
             Row {
-                anchors.right: parent.right
                 spacing: 4
 
                 Button {
