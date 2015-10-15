@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.12.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -13,6 +13,8 @@ Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 ## upstream patches
 #Patch8: 0008-Inherit-path-environment-variables-from-parent.patch
 Patch11: 0011-Don-t-cast-QByteArray-to-char.patch
+# CVE-2015-0856
+Patch12: 0012-Disable-greeters-from-loading-KDE-s-debug-hander.patch
 
 ## downstream patches
 # downstream fedora-specific configuration
@@ -172,6 +174,9 @@ exit 0
 
 
 %changelog
+* Thu Oct 15 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-5
+- Security fix for CVE-2015-0856 (#1271992,#1271993)
+
 * Thu Sep 24 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-4
 - omit 0008-Inherit-path-environment-variables-from-parent.patch pending security concerns
 
