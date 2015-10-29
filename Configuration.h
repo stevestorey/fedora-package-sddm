@@ -48,7 +48,7 @@ namespace SDDM {
                                                                                                    "The lowest virtual terminal number that will be used."));
         );
         Section(Users,
-            Entry(DefaultPath,         QString,     _S("/bin:/usr/bin:/usr/local/bin"),         _S("Default $PATH"));
+            Entry(DefaultPath,         QString,     _S("/usr/local/bin:/usr/bin:/bin"),         _S("Default $PATH"));
             Entry(MinimumUid,          int,         1000,                                       _S("Minimum user id for displayed users"));
             Entry(MaximumUid,          int,         65000,                                      _S("Maximum user id for displayed users"));
             Entry(HideUsers,           QStringList, QStringList(),                              _S("Hidden users"));

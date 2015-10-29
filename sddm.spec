@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.12.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -174,6 +174,9 @@ exit 0
 
 
 %changelog
+* Thu Oct 29 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-6
+- tweak DefaultPath (#1276450)
+
 * Thu Oct 15 2015 Rex Dieter <rdieter@fedoraproject.org> 0.12.0-5
 - Security fix for CVE-2015-0856 (#1271992,#1271993)
 
