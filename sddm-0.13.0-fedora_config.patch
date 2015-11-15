@@ -1,0 +1,33 @@
+diff -up sddm-0.13.0/src/common/Configuration.h.orig sddm-0.13.0/src/common/Configuration.h
+--- sddm-0.13.0/src/common/Configuration.h.orig	2015-11-04 14:41:36.000000000 -0600
++++ sddm-0.13.0/src/common/Configuration.h	2015-11-15 08:04:54.585633353 -0600
+@@ -45,7 +45,7 @@ namespace SDDM {
+         //      Name   Entries (but it's a regular class again)
+         Section(Theme,
+             Entry(ThemeDir,            QString,     _S(DATA_INSTALL_DIR "/themes"),             _S("Theme directory path"));
+-            Entry(Current,             QString,     _S("maui"),                                 _S("Current theme name"));
++            Entry(Current,             QString,     _S("01-breeze-fedora"),                     _S("Current theme name"));
+             Entry(FacesDir,            QString,     _S(DATA_INSTALL_DIR "/faces"),              _S("Face icon directory\n"
+                                                                                                    "The files should be in username.face.icon format"));
+             Entry(CursorTheme,         QString,     QString(),                                  _S("Cursor theme"));
+@@ -59,9 +59,9 @@ namespace SDDM {
+             Entry(SessionDir,          QString,     _S("/usr/share/xsessions"),                 _S("Session description directory"));
+             Entry(SessionCommand,      QString,     _S(SESSION_COMMAND),                        _S("Xsession script path\n"
+                                                                                                    "A script to execute when starting the desktop session"));
+-            Entry(DisplayCommand,      QString,     _S(DATA_INSTALL_DIR "/scripts/Xsetup"),     _S("Xsetup script path\n"
++            Entry(DisplayCommand,      QString,     _S("/etc/sddm/Xsetup"),                     _S("Xsetup script path\n"
+                                                                                                    "A script to execute when starting the display server"));
+-            Entry(DisplayStopCommand,  QString,     _S(DATA_INSTALL_DIR "/scripts/Xstop"),      _S("Xstop script path\n"
++            Entry(DisplayStopCommand,  QString,     _S("/etc/sddm/Xstop"),                      _S("Xstop script path\n"
+                                                                                                    "A script to execute when stopping the display server"));
+             Entry(MinimumVT,           int,         MINIMUM_VT,                                 _S("Minimum VT\n"
+                                                                                                    "The lowest virtual terminal number that will be used."));
+@@ -72,7 +72,7 @@ namespace SDDM {
+                                                                                                           "A script to execute when starting the desktop session"));
+         );
+         Section(Users,
+-            Entry(DefaultPath,         QString,     _S("/bin:/usr/bin:/usr/local/bin"),         _S("Default $PATH"));
++            Entry(DefaultPath,         QString,     _S("/usr/local/bin:/usr/bin:/bin"),         _S("Default $PATH"));
+             Entry(MinimumUid,          int,         UID_MIN,                                    _S("Minimum user id for displayed users"));
+             Entry(MaximumUid,          int,         UID_MAX,                                    _S("Maximum user id for displayed users"));
+             Entry(HideUsers,           QStringList, QStringList(),                              _S("Hidden users"));

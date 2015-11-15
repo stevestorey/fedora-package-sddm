@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.13.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -14,7 +14,7 @@ Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 ## downstream patches
 # downstream fedora-specific configuration
-Patch101: sddm-0.11.0-fedora_config.patch
+Patch101: sddm-0.13.0-fedora_config.patch
 
 # Shamelessly stolen from gdm
 Source11:       sddm.pam
@@ -41,6 +41,8 @@ BuildRequires:  python-docutils
 BuildRequires:  qt5-qtbase-devel
 BuildRequires:  qt5-qtdeclarative-devel
 BuildRequires:  qt5-qttools-devel
+# verify presence to pull defaults from /etc/login.defs
+BuildRequires:  shadow-utils
 BuildRequires:  systemd
 
 Obsoletes: kde-settings-sddm < 20-5
@@ -102,7 +104,7 @@ install -Dpm 644 %{SOURCE14} %{buildroot}%{_sysconfdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
 mkdir -p %{buildroot}%{_sysconfdir}/sddm/
-cp -a %{buildroot}%{_datadir}/sddm/scripts/Xsetup \
+cp -a %{buildroot}%{_datadir}/sddm/scripts/* \
       %{buildroot}%{_sysconfdir}/sddm/
 
 # install fedora theme
@@ -138,7 +140,7 @@ exit 0
 %license COPYING
 %doc README.md CONTRIBUTORS
 %dir %{_sysconfdir}/sddm/
-%config(noreplace)   %{_sysconfdir}/sddm/Xsetup
+%config(noreplace)   %{_sysconfdir}/sddm/*
 %config(noreplace)   %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
@@ -175,6 +177,10 @@ exit 0
 
 
 %changelog
+* Sun Nov 15 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.13.0-3
+- merge Configuration.h into fedora_config.patch
+- copy all scripts into /etc/sddm as %%config(noreplace)
+
 * Sun Nov 15 2015 Rex Dieter <rdieter@fedoraproject.org> 0.13.0-2
 - %%config(noreplace) /etc/sddm/Xsetup
 
