@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.13.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -101,6 +101,9 @@ install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
 install -Dpm 644 %{SOURCE14} %{buildroot}%{_sysconfdir}/sddm.conf
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
+mkdir -p %{buildroot}%{_sysconfdir}/sddm/
+cp -a %{buildroot}%{_datadir}/sddm/scripts/Xsetup \
+      %{buildroot}%{_sysconfdir}/sddm/
 
 # install fedora theme
 install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/02-fedora/Main.qml
@@ -134,6 +137,8 @@ exit 0
 %{!?_licensedir:%global license %%doc}
 %license COPYING
 %doc README.md CONTRIBUTORS
+%dir %{_sysconfdir}/sddm/
+%config(noreplace)   %{_sysconfdir}/sddm/Xsetup
 %config(noreplace)   %{_sysconfdir}/sddm.conf
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm
 %config(noreplace)   %{_sysconfdir}/pam.d/sddm-autologin
@@ -170,6 +175,9 @@ exit 0
 
 
 %changelog
+* Sun Nov 15 2015 Rex Dieter <rdieter@fedoraproject.org> 0.13.0-2
+- %%config(noreplace) /etc/sddm/Xsetup
+
 * Sat Nov 07 2015 Rex Dieter <rdieter@fedoraproject.org> 0.13.0-1
 - 0.13.0
 
