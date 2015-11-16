@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.13.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -24,6 +24,8 @@ Source12:       sddm-autologin.pam
 Source13:       tmpfiles-sddm.conf
 # sample sddm.conf generated with sddm --example-config, and entries commented-out
 Source14: sddm.conf
+# README.scripts
+Source15: README.scripts
 
 # fedora theme files
 Source21:       fedora-Main.qml
@@ -78,7 +80,9 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 
 %prep
-%autosetup -p1
+%setup -q
+
+%patch101 -p1 -b .fedora_config
 
 
 %build
@@ -88,7 +92,8 @@ pushd %{_target_platform}
   -DBUILD_MAN_PAGES:BOOL=ON \
   -DENABLE_JOURNALD:BOOL=ON \
   -DSESSION_COMMAND:PATH=/etc/X11/xinit/Xsession \
-  -DUSE_QT5:BOOL=ON
+  -DUSE_QT5:BOOL=ON \
+  -DWAYLAND_SESSION_COMMAND:PATH=/etc/sddm/wayland-session
 popd
 
 make %{?_smp_mflags} -C %{_target_platform}
@@ -101,6 +106,7 @@ install -Dpm 644 %{SOURCE11} %{buildroot}%{_sysconfdir}/pam.d/sddm
 install -Dpm 644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/sddm-autologin
 install -Dpm 644 %{SOURCE13} %{buildroot}%{_tmpfilesdir}/sddm.conf
 install -Dpm 644 %{SOURCE14} %{buildroot}%{_sysconfdir}/sddm.conf
+install -Dpm 644 %{SOURCE15} %{buildroot}%{_datadir}/sddm/scripts/README.scripts
 mkdir -p %{buildroot}%{_localstatedir}/run/sddm
 mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
 mkdir -p %{buildroot}%{_sysconfdir}/sddm/
@@ -177,6 +183,10 @@ exit 0
 
 
 %changelog
+* Mon Nov 16 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.13.0-4
+- rev sddm.conf for new defaults
+- add /usr/share/sddm/scripts/README.scripts
+
 * Sun Nov 15 2015 Rex Dieter <rdieter@fedoraproject.org> - 0.13.0-3
 - merge Configuration.h into fedora_config.patch
 - copy all scripts into /etc/sddm as %%config(noreplace)
