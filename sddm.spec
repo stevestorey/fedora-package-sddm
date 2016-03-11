@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.13.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -183,6 +183,9 @@ exit 0
 
 
 %changelog
+* Fri Mar 11 2016 Rex Dieter <rdieter@fedoraproject.org> 0.13.0-6
+- sddm: use pam_gnome_keyring (#1317066)
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.13.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
