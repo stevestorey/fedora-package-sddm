@@ -1,0 +1,29 @@
+From 5447cc14400c913d385a4f3ed5a06ec3992023ad Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Mon, 9 Nov 2015 03:41:04 +0100
+Subject: [PATCH 15/34] Expose arrow background color
+
+Let themes change the arrow background color.
+Closes #542.
+
+[ChangeLog][Components] ComboBox now exposes the arrow background color
+as "arrowColor" property.
+---
+ components/2.0/ComboBox.qml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/components/2.0/ComboBox.qml b/components/2.0/ComboBox.qml
+index d9989ac..01c1248 100644
+--- a/components/2.0/ComboBox.qml
++++ b/components/2.0/ComboBox.qml
+@@ -36,6 +36,7 @@ FocusScope {
+     property font font
+     property alias model: listView.model
+     property int index: 0
++    property alias arrowColor: arrow.color
+     property alias arrowIcon: arrowIcon.source
+ 
+     property Component rowDelegate: defaultRowDelegate
+-- 
+2.5.0
+

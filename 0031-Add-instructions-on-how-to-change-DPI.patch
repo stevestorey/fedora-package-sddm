@@ -1,0 +1,37 @@
+From 4c1212e0d3aa17cded4db2dd394285365d44e7bc Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Thu, 28 Jan 2016 08:04:19 +0100
+Subject: [PATCH 31/34] Add instructions on how to change DPI
+
+Closes #402
+---
+ README.md | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/README.md b/README.md
+index 3961e18..9c23bab 100644
+--- a/README.md
++++ b/README.md
+@@ -78,3 +78,19 @@ ACLs if your filesystem does support it.
+ setfacl -m u:sddm:x /home/username
+ setfacl -m u:sddm:r /home/username/.face.icon
+ ```
++
++### Custom DPI
++
++In order to set custom DPI for high resolution screens you should configure
++Xorg yourself.  An easy way is to pass an additional argument to Xorg.
++
++Edit ``/etc/sddm.conf``, go to the ``X11`` section and change ``ServerArguments`` like this:
++
++```
++ServerArguments="-nolisten tcp -dpi 192"
++```
++
++to set DPI to 192.
++
++As an alternative you can edit Xorg configuration ``xorg.conf``, please refer to the
++Xorg documentation.
+-- 
+2.5.0
+

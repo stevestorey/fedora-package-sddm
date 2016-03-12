@@ -1,0 +1,82 @@
+From 17b3db31d9c75a197b3509f786bc646ab6dce17d Mon Sep 17 00:00:00 2001
+From: Jerome Leclanche <jerome@leclan.ch>
+Date: Thu, 5 Nov 2015 17:18:46 +0200
+Subject: [PATCH 04/34] Add a config option to enable avatars
+
+Closes #281
+---
+ ChangeLog                  |  1 +
+ data/man/sddm.conf.rst.in  |  7 +++++++
+ src/common/Configuration.h |  1 +
+ src/greeter/UserModel.cpp  | 25 +++++++++++++++++--------
+ 4 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/data/man/sddm.conf.rst.in b/data/man/sddm.conf.rst.in
+index a916e27..18aedf4 100644
+--- a/data/man/sddm.conf.rst.in
++++ b/data/man/sddm.conf.rst.in
+@@ -60,6 +60,13 @@ OPTIONS
+ 	Name of the cursor theme to be set before starting
+ 	the display server.
+ 
++`EnableAvatars=`
++	When enabled, home directories are searched for ".face.icon" images to
++	display as their avatars. This can be slow on some file systems.
++	When disabled, all avatars will be default. Themes may choose to hide
++	them altogether.
++	Default value is true.
++
+ [XDisplay] section:
+ 
+ `ServerPath=`
+diff --git a/src/common/Configuration.h b/src/common/Configuration.h
+index 069fc16..763b74f 100644
+--- a/src/common/Configuration.h
++++ b/src/common/Configuration.h
+@@ -49,6 +49,7 @@ namespace SDDM {
+             Entry(FacesDir,            QString,     _S(DATA_INSTALL_DIR "/faces"),              _S("Face icon directory\n"
+                                                                                                    "The files should be in username.face.icon format"));
+             Entry(CursorTheme,         QString,     QString(),                                  _S("Cursor theme"));
++            Entry(EnableAvatars,       bool,        true,                                       _S("Enable display of custom user avatars"));
+         );
+         // TODO: Not absolutely sure if everything belongs here. Xsessions, VT and probably some more seem universal
+         Section(XDisplay,
+diff --git a/src/greeter/UserModel.cpp b/src/greeter/UserModel.cpp
+index 5041fab..5c807bc 100644
+--- a/src/greeter/UserModel.cpp
++++ b/src/greeter/UserModel.cpp
+@@ -81,14 +81,23 @@ namespace SDDM {
+             user->needsPassword = strcmp(current_pw->pw_passwd, "") != 0;
+ 
+             // search for face icon
+-            QString userFace = QStringLiteral("%1/.face.icon").arg(user->homeDir);
+-            QString systemFace = QStringLiteral("%1/%2.face.icon").arg(mainConfig.Theme.FacesDir.get()).arg(user->name);
+-            if (QFile::exists(userFace))
+-                user->icon = userFace;
+-            else if (QFile::exists(systemFace))
+-                user->icon = systemFace;
+-            else
+-                user->icon = QStringLiteral("%1/default.face.icon").arg(mainConfig.Theme.FacesDir.get());
++            QString facesDir = mainConfig.Theme.FacesDir.get();
++            QString defaultFace = QStringLiteral("%1/default.face.icon").arg(facesDir);
++            bool avatarsEnabled = mainConfig.Theme.EnableAvatars.get();
++
++            if (avatarsEnabled) {
++                QString userFace = QStringLiteral("%1/.face.icon").arg(user->homeDir);
++                QString systemFace = QStringLiteral("%1/%2.face.icon").arg(facesDir).arg(user->name);
++
++                if (QFile::exists(userFace))
++                    user->icon = userFace;
++                else if (QFile::exists(systemFace))
++                    user->icon = systemFace;
++                else
++                    user->icon = defaultFace;
++            } else {
++                user->icon = defaultFace;
++            }
+ 
+             // add user
+             d->users << user;
+-- 
+2.5.0
+

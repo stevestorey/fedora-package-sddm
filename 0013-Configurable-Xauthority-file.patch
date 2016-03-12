@@ -1,0 +1,89 @@
+From 467027b0168accd55e15303e5ba7348a6bfe95f5 Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Sat, 17 Oct 2015 18:49:09 +0200
+Subject: [PATCH 13/34] Configurable Xauthority file
+
+See issue #135.
+
+[ChangeLog][Configuration] Add UserAuthFile to the XDisplay section.
+---
+ data/man/sddm.conf.rst.in  |  4 ++++
+ src/common/Configuration.h |  1 +
+ src/helper/Backend.cpp     | 10 ++++++++--
+ src/helper/UserSession.cpp |  5 +++++
+ 4 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/data/man/sddm.conf.rst.in b/data/man/sddm.conf.rst.in
+index edce9cf..8d8a7d4 100644
+--- a/data/man/sddm.conf.rst.in
++++ b/data/man/sddm.conf.rst.in
+@@ -97,6 +97,10 @@ OPTIONS
+         Path to the user session log file, relative to the home directory.
+         Default value is ".cache/xsession-errors".
+ 
++`UserAuthFile=`
++        Path to the Xauthority file, relative to the home directory.
++        Default value is ".Xauthority".
++
+ `DisplayCommand=`
+ 	Path of script to execute when starting the display server.
+ 	Default value is "@DATA_INSTALL_DIR@/scripts/Xsetup".
+diff --git a/src/common/Configuration.h b/src/common/Configuration.h
+index 89a57db..5bd5296 100644
+--- a/src/common/Configuration.h
++++ b/src/common/Configuration.h
+@@ -61,6 +61,7 @@ namespace SDDM {
+             Entry(SessionDir,          QString,     _S("/usr/share/xsessions"),                 _S("Directory containing available X sessions"));
+             Entry(SessionCommand,      QString,     _S(SESSION_COMMAND),                        _S("Path to a script to execute when starting the desktop session"));
+ 	    Entry(SessionLogFile,      QString,     _S(".cache/xsession-errors"),               _S("Path to the user session log file"));
++	    Entry(UserAuthFile,        QString,     _S(".Xauthority"),                          _S("Path to the Xauthority file"));
+             Entry(DisplayCommand,      QString,     _S(DATA_INSTALL_DIR "/scripts/Xsetup"),     _S("Path to a script to execute when starting the display server"));
+             Entry(DisplayStopCommand,  QString,     _S(DATA_INSTALL_DIR "/scripts/Xstop"),      _S("Path to a script to execute when stopping the display server"));
+             Entry(MinimumVT,           int,         MINIMUM_VT,                                 _S("The lowest virtual terminal number that will be used."));
+diff --git a/src/helper/Backend.cpp b/src/helper/Backend.cpp
+index 12facb9..b19e6ed 100644
+--- a/src/helper/Backend.cpp
++++ b/src/helper/Backend.cpp
+@@ -23,6 +23,7 @@
+ 
+ #include "backend/PamBackend.h"
+ #include "backend/PasswdBackend.h"
++#include "Configuration.h"
+ #include "UserSession.h"
+ 
+ #include <QtCore/QProcessEnvironment>
+@@ -62,8 +63,13 @@ namespace SDDM {
+             env.insert(QStringLiteral("SHELL"), QString::fromLocal8Bit(pw->pw_shell));
+             env.insert(QStringLiteral("USER"), QString::fromLocal8Bit(pw->pw_name));
+             env.insert(QStringLiteral("LOGNAME"), QString::fromLocal8Bit(pw->pw_name));
+-            if (env.contains(QStringLiteral("DISPLAY")) && !env.contains(QStringLiteral("XAUTHORITY")))
+-                env.insert(QStringLiteral("XAUTHORITY"), QStringLiteral("%1/.Xauthority").arg(QString::fromLocal8Bit(pw->pw_dir)));
++            if (env.contains(QStringLiteral("DISPLAY")) && !env.contains(QStringLiteral("XAUTHORITY"))) {
++                // determine Xauthority path
++                QString value = QStringLiteral("%1/%2")
++                        .arg(QString::fromLocal8Bit(pw->pw_dir))
++                        .arg(mainConfig.XDisplay.UserAuthFile.get());
++                env.insert(QStringLiteral("XAUTHORITY"), value);
++            }
+             // TODO: I'm fairly sure this shouldn't be done for PAM sessions, investigate!
+             m_app->session()->setProcessEnvironment(env);
+         }
+diff --git a/src/helper/UserSession.cpp b/src/helper/UserSession.cpp
+index bd6d1c5..0b16a9a 100644
+--- a/src/helper/UserSession.cpp
++++ b/src/helper/UserSession.cpp
+@@ -173,6 +173,11 @@ namespace SDDM {
+             QString display = processEnvironment().value(QStringLiteral("DISPLAY"));
+             qDebug() << "Adding cookie to" << file;
+ 
++
++            // create the path
++            QFileInfo finfo(file);
++            QDir().mkpath(finfo.absolutePath());
++
+             QFile file_handler(file);
+             file_handler.open(QIODevice::WriteOnly);
+             file_handler.close();
+-- 
+2.5.0
+

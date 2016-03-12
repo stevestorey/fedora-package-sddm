@@ -1,0 +1,35 @@
+From f19e0f3ce5ba9b31c9bc9aa08ec8805b933e5468 Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Fri, 6 Nov 2015 08:16:28 +0100
+Subject: [PATCH 10/34] elarun: Remove duplicate session selector
+
+Closes #521
+
+[ChangeLog][Themes] Remove duplicate session selector
+from elarun.
+---
+ data/themes/elarun/Main.qml | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/data/themes/elarun/Main.qml b/data/themes/elarun/Main.qml
+index 28c0168..a83f0e7 100644
+--- a/data/themes/elarun/Main.qml
++++ b/data/themes/elarun/Main.qml
+@@ -165,14 +165,6 @@ Rectangle {
+                         spacing: 8
+ 
+                         ImageButton {
+-                            id: session_button
+-                            source: "images/session_normal.png"
+-                            onClicked: if (menu_session.state === "visible") menu_session.state = ""; else menu_session.state = "visible"
+-
+-                            KeyNavigation.backtab: login_button; KeyNavigation.tab: system_button
+-                        }
+-
+-                        ImageButton {
+                             id: system_button
+                             source: "images/system_shutdown.png"
+                             onClicked: sddm.powerOff()
+-- 
+2.5.0
+

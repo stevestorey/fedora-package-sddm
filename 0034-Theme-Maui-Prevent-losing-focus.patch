@@ -1,0 +1,44 @@
+From c3863ccb276469fd7da8b7397c65d96d57cf2759 Mon Sep 17 00:00:00 2001
+From: Benjamin Robin <dev@benjarobin.fr>
+Date: Sun, 13 Dec 2015 16:29:45 +0100
+Subject: [PATCH 34/34] Theme Maui: Prevent losing focus
+
+And word wrap the user text message
+---
+ data/themes/maui/Main.qml | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/data/themes/maui/Main.qml b/data/themes/maui/Main.qml
+index 6d2092d..260ea9b 100644
+--- a/data/themes/maui/Main.qml
++++ b/data/themes/maui/Main.qml
+@@ -58,6 +58,13 @@ Rectangle {
+                 source = config.defaultBackground
+             }
+         }
++
++        MouseArea {
++            anchors.fill: parent
++            onClicked: {
++                listView.focus = true;
++            }
++        }
+     }
+ 
+     Rectangle {
+@@ -164,9 +171,11 @@ Rectangle {
+                     anchors.horizontalCenter: parent.horizontalCenter
+                     color: "white"
+                     text: textConstants.promptSelectUser
+-
++                    wrapMode: Text.WordWrap
++                    width:parent.width - 60
+                     font.pixelSize: 20
+                 }
++
+             }
+         }
+ 
+-- 
+2.5.0
+

@@ -1,0 +1,26 @@
+From c7409687ad26b7f47a2cd73eddb8617ef7cd4701 Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Thu, 5 Nov 2015 23:29:59 +0100
+Subject: [PATCH 08/34] Enable PrivateTmp again
+
+Let's see if #225 is still happening.
+---
+ services/sddm.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/sddm.service.in b/services/sddm.service.in
+index b0cea02..c476441 100644
+--- a/services/sddm.service.in
++++ b/services/sddm.service.in
+@@ -7,7 +7,7 @@ After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service
+ [Service]
+ ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/sddm
+ Restart=always
+-#PrivateTmp=yes
++PrivateTmp=yes
+ 
+ [Install]
+ Alias=display-manager.service
+-- 
+2.5.0
+

@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.13.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -11,6 +11,33 @@ Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 ## upstream patches
+BuildRequires: git-core
+Patch2: 0002-Use-higher-quality-neutral-images-for-default-faces.patch
+Patch3: 0003-Generate-and-install-the-default-sddm.conf-after-sdd.patch
+Patch4: 0004-Add-a-config-option-to-enable-avatars.patch
+Patch5: 0005-Use-.face.icon-instead-of-default.face.icon-and-rena.patch
+Patch6: 0006-Fix-mixed-indents.patch
+Patch7: 0007-Fall-back-to-regular-login-when-autologin-fails.patch
+# https://github.com/sddm/sddm/issues/225
+# continue to skip, for now
+#Patch8: 0008-Enable-PrivateTmp-again.patch
+Patch9: 0009-Improve-config-file-comments.patch
+Patch10: 0010-elarun-Remove-duplicate-session-selector.patch
+Patch12: 0012-Configurable-user-session-log.patch
+Patch13: 0013-Configurable-Xauthority-file.patch
+Patch15: 0015-Expose-arrow-background-color.patch
+Patch20: 0020-Adds-a-count-property-to-UserModel.patch
+Patch21: 0021-Refactored-ConfigReader-is-matches-Default.patch
+Patch22: 0022-Defines-a-users-threshold-to-disable-avatars.patch
+Patch24: 0024-Rename-XDisplay-and-WaylandDisplay-config-sections.patch
+Patch25: 0025-Fix-crash-reading-lists-from-configuration.patch
+Patch26: 0026-Do-not-read-multiple-lines.patch
+Patch27: 0027-Fix-moc-include-name.patch
+Patch28: 0028-Allow-for-overriding-the-text-color-of-PasswordBox.patch
+Patch31: 0031-Add-instructions-on-how-to-change-DPI.patch
+Patch32: 0032-Honor-RememberLastUser-and-RememberLastSession-setti.patch
+Patch33: 0033-Activate-window-for-the-primary-screen.patch
+Patch34: 0034-Theme-Maui-Prevent-losing-focus.patch
 
 ## downstream patches
 # downstream fedora-specific configuration
@@ -31,6 +58,7 @@ Source15: README.scripts
 Source21:       fedora-Main.qml
 Source22:       fedora-metadata.desktop
 Source23:       fedora-theme.conf
+Source24:       angle-down.png
 
 Provides: service(graphical-login) = sddm
 
@@ -80,9 +108,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 
 %prep
-%setup -q
-
-%patch101 -p1 -b .fedora_config
+%autosetup -Sgit
 
 
 %build
@@ -90,9 +116,9 @@ mkdir %{_target_platform}
 pushd %{_target_platform}
 %{cmake} .. \
   -DBUILD_MAN_PAGES:BOOL=ON \
+  -DCMAKE_BUILD_TYPE:STRING="Release" \
   -DENABLE_JOURNALD:BOOL=ON \
   -DSESSION_COMMAND:PATH=/etc/X11/xinit/Xsession \
-  -DUSE_QT5:BOOL=ON \
   -DWAYLAND_SESSION_COMMAND:PATH=/etc/sddm/wayland-session
 popd
 
@@ -117,6 +143,7 @@ cp -a %{buildroot}%{_datadir}/sddm/scripts/* \
 install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/02-fedora/Main.qml
 install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/sddm/themes/02-fedora/metadata.desktop
 install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/02-fedora/theme.conf
+install -Dpm 644 %{SOURCE24} %{buildroot}%{_datadir}/sddm/themes/02-fedora/angle-down.png
 
 
 %pre
@@ -128,10 +155,17 @@ exit 0
 
 %post
 %systemd_post sddm.service
-# handle theme rename: fedora => 02-fedora
-(grep '^Current=fedora$' %{_sysconfdir}/sddm.conf > /dev/null && \
- sed -i.rpmsave -e 's|^Current=fedora$|Current=02-fedora|' \
- %{_sysconfdir}/sddm.conf
+# handle incompatible configuration changes
+(grep \
+   -e '^Current=fedora$' \
+   -e '^\[XDisplay\]$' \
+   -e '^\[WaylandDisplay\]$' \
+   %{_sysconfdir}/sddm.conf > /dev/null && \
+ sed -i.rpmsave \
+   -e 's|^Current=fedora$|#Current=01-breeze-fedora|' \
+   -e 's|^\[XDisplay\]$|\[X11\]|' \
+   -e 's|^\[WaylandDisplay\]$|\[Wayland\]|' \
+   %{_sysconfdir}/sddm.conf
 ) ||:
 
 
@@ -183,6 +217,11 @@ exit 0
 
 
 %changelog
+* Fri Mar 11 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.13.0-7
+- pull in upstream fixes, some new features
+- The desktop selection drop down list has an empty box (#1222228)
+- sddm: RememberLastUser=false does not work (#1240749)
+
 * Fri Mar 11 2016 Rex Dieter <rdieter@fedoraproject.org> 0.13.0-6
 - sddm: use pam_gnome_keyring (#1317066)
 

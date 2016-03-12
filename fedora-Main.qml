@@ -93,6 +93,8 @@ Rectangle {
                     height: 24
                     font.pixelSize: 14
 
+                    arrowIcon: "angle-down.png"
+
                     model: sessionModel
                     index: sessionModel.lastIndex
 
@@ -102,6 +104,8 @@ Rectangle {
                 LayoutBox {
                     id: layoutBox; height: 24
                     font.pixelSize: 14
+
+                    arrowIcon: "angle-down.png"
 
                     KeyNavigation.backtab: session; KeyNavigation.tab: loginButton
                 }

@@ -1,0 +1,41 @@
+From cdd6552bd8a839f29ecb84abd7b98f1c0fcd2b99 Mon Sep 17 00:00:00 2001
+From: Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
+Date: Sat, 16 Jan 2016 18:55:37 +0100
+Subject: [PATCH 26/34] Do not read multiple lines
+
+Reading multiple lines wouldn't help here as input comes from a previous
+readLine().
+---
+ src/common/ConfigReader.cpp | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/src/common/ConfigReader.cpp b/src/common/ConfigReader.cpp
+index acf880f..07eb30c 100644
+--- a/src/common/ConfigReader.cpp
++++ b/src/common/ConfigReader.cpp
+@@ -30,15 +30,15 @@
+ 
+ QTextStream &operator>>(QTextStream &str, QStringList &list)  {
+     list.clear();
++
+     QString line = str.readLine();
+-    while (!line.isNull()) {
+-        Q_FOREACH (const QStringRef &s, line.splitRef(QLatin1Char(','))) {
+-            QStringRef trimmed = s.trimmed();
+-            if (!trimmed.isEmpty())
+-                list.append(trimmed.toString());
+-        }
+-        line = str.readLine();
++
++    Q_FOREACH (const QStringRef &s, line.splitRef(QLatin1Char(','))) {
++        QStringRef trimmed = s.trimmed();
++        if (!trimmed.isEmpty())
++            list.append(trimmed.toString());
+     }
++
+     return str;
+ }
+ 
+-- 
+2.5.0
+
