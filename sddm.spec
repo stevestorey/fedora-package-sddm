@@ -36,6 +36,7 @@ Source24:       angle-down.png
 Provides: service(graphical-login) = sddm
 
 BuildRequires:  cmake
+BuildRequires:  extra-cmake-modules
 BuildRequires:  libxcb-devel
 BuildRequires:  pam-devel
 BuildRequires:  pkgconfig(libsystemd)
