@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
 Name:           sddm
-Version:        0.13.0
-Release:        7%{?dist}
+Version:        0.14.0
+Release:        1%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -11,37 +11,10 @@ Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
 ## upstream patches
-BuildRequires: git-core
-Patch2: 0002-Use-higher-quality-neutral-images-for-default-faces.patch
-Patch3: 0003-Generate-and-install-the-default-sddm.conf-after-sdd.patch
-Patch4: 0004-Add-a-config-option-to-enable-avatars.patch
-Patch5: 0005-Use-.face.icon-instead-of-default.face.icon-and-rena.patch
-Patch6: 0006-Fix-mixed-indents.patch
-Patch7: 0007-Fall-back-to-regular-login-when-autologin-fails.patch
-# https://github.com/sddm/sddm/issues/225
-# continue to skip, for now
-#Patch8: 0008-Enable-PrivateTmp-again.patch
-Patch9: 0009-Improve-config-file-comments.patch
-Patch10: 0010-elarun-Remove-duplicate-session-selector.patch
-Patch12: 0012-Configurable-user-session-log.patch
-Patch13: 0013-Configurable-Xauthority-file.patch
-Patch15: 0015-Expose-arrow-background-color.patch
-Patch20: 0020-Adds-a-count-property-to-UserModel.patch
-Patch21: 0021-Refactored-ConfigReader-is-matches-Default.patch
-Patch22: 0022-Defines-a-users-threshold-to-disable-avatars.patch
-Patch24: 0024-Rename-XDisplay-and-WaylandDisplay-config-sections.patch
-Patch25: 0025-Fix-crash-reading-lists-from-configuration.patch
-Patch26: 0026-Do-not-read-multiple-lines.patch
-Patch27: 0027-Fix-moc-include-name.patch
-Patch28: 0028-Allow-for-overriding-the-text-color-of-PasswordBox.patch
-Patch31: 0031-Add-instructions-on-how-to-change-DPI.patch
-Patch32: 0032-Honor-RememberLastUser-and-RememberLastSession-setti.patch
-Patch33: 0033-Activate-window-for-the-primary-screen.patch
-Patch34: 0034-Theme-Maui-Prevent-losing-focus.patch
+#BuildRequires: git-core
 
 ## downstream patches
-# downstream fedora-specific configuration
-Patch101: sddm-0.13.0-fedora_config.patch
+Patch101:       sddm-0.14.0-fedora_config.patch 
 
 # Shamelessly stolen from gdm
 Source11:       sddm.pam
@@ -68,9 +41,9 @@ BuildRequires:  pam-devel
 BuildRequires:  pkgconfig(libsystemd-journal)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  python-docutils
-BuildRequires:  qt5-qtbase-devel
-BuildRequires:  qt5-qtdeclarative-devel
-BuildRequires:  qt5-qttools-devel
+BuildRequires:  qt5-qtbase-devel >= 5.6
+BuildRequires:  qt5-qtdeclarative-devel >= 5.6
+BuildRequires:  qt5-qttools-devel >= 5.6
 # verify presence to pull defaults from /etc/login.defs
 BuildRequires:  shadow-utils
 BuildRequires:  systemd
@@ -81,8 +54,6 @@ Obsoletes: kde-settings-sddm < 20-5
 Requires: desktop-backgrounds-compat
 # for /usr/share/pixmaps/system-logo-white.png
 Requires: system-logos
-Requires: qt5-qtbase-gui
-Requires: qt5-qtdeclarative
 Requires: systemd
 Requires: xorg-x11-xinit
 %ifnarch s390 s390x
@@ -108,7 +79,9 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 
 %prep
-%autosetup -Sgit
+%setup -q
+
+%patch101 -p1 -b .fedora_config
 
 
 %build
@@ -138,6 +111,8 @@ mkdir -p %{buildroot}%{_localstatedir}/lib/sddm
 mkdir -p %{buildroot}%{_sysconfdir}/sddm/
 cp -a %{buildroot}%{_datadir}/sddm/scripts/* \
       %{buildroot}%{_sysconfdir}/sddm/
+# we're using /etc/X11/xinit/Xsession (by default) instead
+rm -fv %{buildroot}%{_sysconfdir}/sddm/Xsession
 
 # install fedora theme
 install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/02-fedora/Main.qml
@@ -177,7 +152,7 @@ exit 0
 
 %files
 %{!?_licensedir:%global license %%doc}
-%license COPYING
+%license LICENSE 
 %doc README.md CONTRIBUTORS
 %dir %{_sysconfdir}/sddm/
 %config(noreplace)   %{_sysconfdir}/sddm/*
@@ -209,14 +184,26 @@ exit 0
 %{_mandir}/man5/sddm.conf.5*
 %{_mandir}/man5/sddm-state.conf.5*
 
+%post themes
+# handle incompatible configuration changes
+(grep \
+   -e '^Current=circles$' \
+   %{_sysconfdir}/sddm.conf > /dev/null && \
+ sed -i.rpmsave \
+   -e 's|^Current=circles$|#Current=01-breeze-fedora|' \
+   %{_sysconfdir}/sddm.conf
+) ||:
+
 %files themes
-%{_datadir}/sddm/themes/circles/
 %{_datadir}/sddm/themes/elarun/
 %{_datadir}/sddm/themes/maldives/
-%{_datadir}/sddm/themes/maui/
 
 
 %changelog
+* Sun Aug 28 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-1
+- sddm-0.14.0
+- -themes: circles theme was removed
+
 * Fri Mar 11 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.13.0-7
 - pull in upstream fixes, some new features
 - The desktop selection drop down list has an empty box (#1222228)
