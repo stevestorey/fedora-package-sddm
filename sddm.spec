@@ -38,7 +38,7 @@ Provides: service(graphical-login) = sddm
 BuildRequires:  cmake
 BuildRequires:  libxcb-devel
 BuildRequires:  pam-devel
-BuildRequires:  pkgconfig(libsystemd-journal)
+BuildRequires:  pkgconfig(libsystemd)
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  python-docutils
 BuildRequires:  qt5-qtbase-devel >= 5.6
