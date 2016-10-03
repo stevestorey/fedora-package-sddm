@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -51,10 +51,12 @@ BuildRequires:  systemd
 
 Obsoletes: kde-settings-sddm < 20-5
 
+%if 0%{?fedora}
 # for /usr/share/backgrounds/default.png
 Requires: desktop-backgrounds-compat
 # for /usr/share/pixmaps/system-logo-white.png
 Requires: system-logos
+%endif
 Requires: systemd
 Requires: xorg-x11-xinit
 %ifnarch s390 s390x
@@ -205,6 +207,9 @@ exit 0
 
 
 %changelog
+* Mon Oct 03 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-3
+- drop deps used for fedora-only theme
+
 * Mon Oct 03 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-2
 - make 02-fedora theme, fedora only
 
