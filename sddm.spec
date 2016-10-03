@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -35,7 +35,7 @@ Source24:       angle-down.png
 
 Provides: service(graphical-login) = sddm
 
-BuildRequires:  cmake
+BuildRequires:  cmake >= 2.8.8
 BuildRequires:  extra-cmake-modules
 BuildRequires:  libxcb-devel
 BuildRequires:  pam-devel
@@ -116,10 +116,12 @@ cp -a %{buildroot}%{_datadir}/sddm/scripts/* \
 rm -fv %{buildroot}%{_sysconfdir}/sddm/Xsession
 
 # install fedora theme
+%if 0%{?fedora}
 install -Dpm 644 %{SOURCE21} %{buildroot}%{_datadir}/sddm/themes/02-fedora/Main.qml
 install -Dpm 644 %{SOURCE22} %{buildroot}%{_datadir}/sddm/themes/02-fedora/metadata.desktop
 install -Dpm 644 %{SOURCE23} %{buildroot}%{_datadir}/sddm/themes/02-fedora/theme.conf
 install -Dpm 644 %{SOURCE24} %{buildroot}%{_datadir}/sddm/themes/02-fedora/angle-down.png
+%endif
 
 
 %pre
@@ -176,8 +178,10 @@ exit 0
 %{_datadir}/sddm/flags/
 %{_datadir}/sddm/scripts/
 %dir %{_datadir}/sddm/themes/
+%if 0%{?fedora}
 # default non-userlist fedora theme
 %{_datadir}/sddm/themes/02-fedora/
+%endif
 # %%lang'ify ? -- rex
 %{_datadir}/sddm/translations/
 %{_mandir}/man1/sddm.1*
@@ -201,6 +205,9 @@ exit 0
 
 
 %changelog
+* Mon Oct 03 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-2
+- make 02-fedora theme, fedora only
+
 * Sun Aug 28 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-1
 - sddm-0.14.0
 - -themes: circles theme was removed
