@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -207,6 +207,9 @@ exit 0
 
 
 %changelog
+* Fri Oct 07 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-4
+- sddm.conf default: Current=01-breeze-fedora
+
 * Mon Oct 03 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-3
 - drop deps used for fedora-only theme
 

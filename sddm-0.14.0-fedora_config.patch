@@ -1,6 +1,15 @@
 diff -up sddm-0.14.0/src/common/Configuration.h.fedora_config sddm-0.14.0/src/common/Configuration.h
 --- sddm-0.14.0/src/common/Configuration.h.fedora_config	2016-08-28 06:54:03.000000000 -0500
-+++ sddm-0.14.0/src/common/Configuration.h	2016-08-28 14:36:45.974795657 -0500
++++ sddm-0.14.0/src/common/Configuration.h	2016-10-07 12:54:34.344317447 -0500
+@@ -46,7 +46,7 @@ namespace SDDM {
+         //  Name   Entries (but it's a regular class again)
+         Section(Theme,
+             Entry(ThemeDir,            QString,     _S(DATA_INSTALL_DIR "/themes"),             _S("Theme directory path"));
+-            Entry(Current,             QString,     _S(""),                                     _S("Current theme name"));
++            Entry(Current,             QString,     _S("01-breeze-fedora"),                     _S("Current theme name"));
+             Entry(FacesDir,            QString,     _S(DATA_INSTALL_DIR "/faces"),              _S("Global directory for user avatars\n"
+                                                                                                    "The files should be named <username>.face.icon"));
+             Entry(CursorTheme,         QString,     QString(),                                  _S("Cursor theme used in the greeter"));
 @@ -64,21 +64,21 @@ namespace SDDM {
              Entry(XauthPath,           QString,     _S("/usr/bin/xauth"),                       _S("Path to xauth binary"));
              Entry(SessionDir,          QString,     _S("/usr/share/xsessions"),                 _S("Directory containing available X sessions"));
