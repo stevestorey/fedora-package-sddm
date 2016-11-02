@@ -1,2 +1,5 @@
 d8d1359a45fd11e05e1f13c8d175fd79  angle-down.png
 393fbed2f2e9d030e1717949867e96c8  v0.14.0.tar.gz
+a1ea9627b3a502c8a197581ff687fff4  0001-Fix-display-of-user-avatars.-684.patch
+5ab2516031961b233c3a167cc015db15  0002-Remove-quotes-from-ServerArguments-696.patch
+00c792545faabd15e79cd481bf967e6a  0003-Add-a-config-option-to-enable-high-DPI-scaling-701.patch

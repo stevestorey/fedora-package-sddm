@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -10,8 +10,11 @@ Summary:        QML based X11 desktop manager
 Url:            https://github.com/sddm/sddm
 Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 
-## upstream patches
+## upstream patches (in lookaside cache)
 #BuildRequires: git-core
+Patch1: 0001-Fix-display-of-user-avatars.-684.patch
+Patch2: 0002-Remove-quotes-from-ServerArguments-696.patch
+Patch3: 0003-Add-a-config-option-to-enable-high-DPI-scaling-701.patch
 
 ## downstream patches
 Patch101:       sddm-0.14.0-fedora_config.patch 
@@ -83,6 +86,10 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 
 %prep
 %setup -q
+
+%patch1 -p1 -b .0001
+%patch2 -p1 -b .0002
+%patch3 -p1 -b .0003
 
 %patch101 -p1 -b .fedora_config
 
@@ -207,6 +214,9 @@ exit 0
 
 
 %changelog
+* Wed Nov 02 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-5
+- pull in upstream fixes
+
 * Fri Oct 07 2016 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-4
 - sddm.conf default: Current=01-breeze-fedora
 
