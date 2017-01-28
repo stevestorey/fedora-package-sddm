@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -15,8 +15,10 @@ Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 Patch1: 0001-Fix-display-of-user-avatars.-684.patch
 Patch2: 0002-Remove-quotes-from-ServerArguments-696.patch
 Patch3: 0003-Add-a-config-option-to-enable-high-DPI-scaling-701.patch
+
+## upstreamable patches
 # Fixes RHBZ #1392654
-Patch4: https://github.com/sddm/sddm/pull/735.patch
+Patch54: https://github.com/sddm/sddm/pull/735.patch
 
 ## downstream patches
 Patch101:       sddm-0.14.0-fedora_config.patch 
@@ -92,7 +94,8 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %patch1 -p1 -b .0001
 %patch2 -p1 -b .0002
 %patch3 -p1 -b .0003
-%patch4 -p1 -b .0004
+
+%patch54 -p1 -b .0054
 
 %patch101 -p1 -b .fedora_config
 
@@ -217,6 +220,9 @@ exit 0
 
 
 %changelog
+* Sat Jan 28 2017 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-7
+- EnableHiDPI=false default
+
 * Tue Nov 08 2016 Adam Williamson <awilliam@redhat.com> - 0.14.0-6
 - backport PR #735 to fix RHBZ #1392654
 
