@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        9%{?dist}
+Release:        10%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -95,6 +95,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %patch1 -p1 -b .0001
 %patch2 -p1 -b .0002
 %patch3 -p1 -b .0003
+%patch35 -p1 -b .0035
 
 %patch54 -p1 -b .0054
 
@@ -221,6 +222,9 @@ exit 0
 
 
 %changelog
+* Tue Jun 13 2017 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-10
+- actually apply patch for bug #1446782
+
 * Tue Jun 13 2017 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-9
 - backport: UserModel: Check for duplicates from getpwent() (#1446782)
 
