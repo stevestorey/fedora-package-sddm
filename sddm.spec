@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        8%{?dist}
+Release:        9%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -15,6 +15,7 @@ Source0:        https://github.com/sddm/sddm/archive/v%{version}.tar.gz
 Patch1: 0001-Fix-display-of-user-avatars.-684.patch
 Patch2: 0002-Remove-quotes-from-ServerArguments-696.patch
 Patch3: 0003-Add-a-config-option-to-enable-high-DPI-scaling-701.patch
+Patch35: 0035-UserModel-Check-for-duplicates-from-getpwent.patch
 
 ## upstreamable patches
 # Fixes RHBZ #1392654
@@ -220,6 +221,9 @@ exit 0
 
 
 %changelog
+* Tue Jun 13 2017 Rex Dieter <rdieter@fedoraproject.org> - 0.14.0-9
+- backport: UserModel: Check for duplicates from getpwent() (#1446782)
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.14.0-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
