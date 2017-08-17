@@ -2,7 +2,7 @@
 
 Name:           sddm
 Version:        0.14.0
-Release:        12%{?dist}
+Release:        13%{?dist}
 # code GPLv2+, fedora theme CC-BY-SA
 License:        GPLv2+ and CC-BY-SA
 Summary:        QML based X11 desktop manager
@@ -23,6 +23,8 @@ Patch54: https://github.com/sddm/sddm/pull/735.patch
 
 ## downstream patches
 Patch101:       sddm-0.14.0-fedora_config.patch 
+
+Patch102:       0001-Port-from-xauth-to-libXau.patch
 
 # Shamelessly stolen from gdm
 Source11:       sddm.pam
@@ -100,6 +102,7 @@ A collection of sddm themes, including: circles, elarun, maldives, maui.
 %patch54 -p1 -b .0054
 
 %patch101 -p1 -b .fedora_config
+%patch102 -p1 -b .libxau
 
 
 %build
@@ -222,6 +225,9 @@ exit 0
 
 
 %changelog
+* Thu Aug 17 2017 Martin Bříza <mbriza@redhat.com> - 0.14.0-13
+- Port from xauth to libXau (#1370222)
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.14.0-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
